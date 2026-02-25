@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">果康云</string>
+    <string name="title_activity_main">果康云</string>
+    <string name="package_name">com.wawngjie2026.guokangyun</string>
+    <string name="custom_url_scheme">com.wawngjie2026.guokangyun</string>
+</resources>
