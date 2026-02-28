@@ -16,6 +16,7 @@
     "@capacitor/cli": "^8.0.2",
     "@capacitor/core": "^8.0.2",
     "@capacitor/geolocation": "^8.0.0",
+    "axios": "^1.13.6",
     "echarts": "^6.0.0",
     "vue": "^3.5.25"
   },
