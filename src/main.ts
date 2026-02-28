@@ -1,28 +1,55 @@
+// src\main.ts
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { OpenAPI } from './api/generated'
 import axios from 'axios'
 
-// 1. 配置后端的真实接口地址 (对应 FastAPI 的运行地址)
-OpenAPI.BASE = 'http://127.0.0.1:8000'
+// 1. 配置后端的真实接口地址
+OpenAPI.BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
-// 2. 如果用户已经登录，可以在这里或者登录成功后注入 Token
-const token = localStorage.getItem('token') // 假设你存在 localStorage 中
-if (token) {
-  OpenAPI.TOKEN = token
+// 2. 【优化】将 TOKEN 配置为一个函数，这样每次请求前都会实时去 localStorage 获取最新值
+OpenAPI.TOKEN = async () => {
+  return localStorage.getItem('token') || ''
 }
 
-// 3. （进阶）如果你需要统一处理报错（比如 401 跳转登录页），可以拦截 Axios
+// 3. 配置全局 Axios 拦截器
 axios.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // 请求成功直接放行
+    return response
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      console.error('登录已过期，请重新登录')
-      // TODO: 清除 token，跳转到登录页
+    // 统一错误处理
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          console.error('登录已过期或未登录，请重新登录')
+          // 清除失效的 token
+          localStorage.removeItem('token')
+          // TODO: 这里后续可以引入 router 实现自动跳转
+          // router.push('/login')
+          break
+        case 403:
+          console.error('权限不足，无法执行此操作')
+          break
+        case 404:
+          console.error('请求的资源不存在')
+          break
+        case 500:
+          console.error('服务器内部错误')
+          break
+      }
+    } else {
+      console.error('网络连接失败，请检查后端服务是否启动')
     }
     return Promise.reject(error)
   }
 )
 
-createApp(App).mount('#app')
+const app = createApp(App)
+
+// 如果你配置了 router 或 pinia，在这里 use 它们
+// app.use(router)
+
+app.mount('#app')
