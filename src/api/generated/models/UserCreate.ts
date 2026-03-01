@@ -10,8 +10,12 @@ export type UserCreate = {
     phone?: (string | null);
     is_verified?: number;
     /**
-     * 明文密码，后端需哈希处理
+     * 密码，至少6位，明文密码，后端需哈希处理
      */
     password: string;
+    /**
+     * 6位邮箱验证码
+     */
+    code: string;
 };
 

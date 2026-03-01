@@ -17,6 +17,8 @@ export type { GovernanceRecordResponse } from './models/GovernanceRecordResponse
 export type { GovernanceRecordUpdate } from './models/GovernanceRecordUpdate';
 export { GovernanceStatusEnum } from './models/GovernanceStatusEnum';
 export type { HTTPValidationError } from './models/HTTPValidationError';
+export type { PasswordResetConfirm } from './models/PasswordResetConfirm';
+export type { PasswordResetRequest } from './models/PasswordResetRequest';
 export { PestCategoryEnum } from './models/PestCategoryEnum';
 export type { PestInfoCreate } from './models/PestInfoCreate';
 export type { PestInfoResponse } from './models/PestInfoResponse';
@@ -25,7 +27,9 @@ export type { PostCreate } from './models/PostCreate';
 export type { PostResponse } from './models/PostResponse';
 export type { PreventionSchemeResponse } from './models/PreventionSchemeResponse';
 export { RoleEnum } from './models/RoleEnum';
+export type { SendCodeRequest } from './models/SendCodeRequest';
 export type { Token } from './models/Token';
+export type { UserChangePassword } from './models/UserChangePassword';
 export type { UserCreate } from './models/UserCreate';
 export type { UserResponse } from './models/UserResponse';
 export type { ValidationError } from './models/ValidationError';

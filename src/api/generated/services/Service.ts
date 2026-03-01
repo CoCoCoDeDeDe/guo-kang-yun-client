@@ -9,12 +9,16 @@ import type { Body_login_for_access_token_api_v1_users_login_post } from '../mod
 import type { GovernanceRecordCreate } from '../models/GovernanceRecordCreate';
 import type { GovernanceRecordResponse } from '../models/GovernanceRecordResponse';
 import type { GovernanceRecordUpdate } from '../models/GovernanceRecordUpdate';
+import type { PasswordResetConfirm } from '../models/PasswordResetConfirm';
+import type { PasswordResetRequest } from '../models/PasswordResetRequest';
 import type { PestInfoCreate } from '../models/PestInfoCreate';
 import type { PestInfoResponse } from '../models/PestInfoResponse';
 import type { PestInfoUpdate } from '../models/PestInfoUpdate';
 import type { PostCreate } from '../models/PostCreate';
 import type { PostResponse } from '../models/PostResponse';
+import type { SendCodeRequest } from '../models/SendCodeRequest';
 import type { Token } from '../models/Token';
+import type { UserChangePassword } from '../models/UserChangePassword';
 import type { UserCreate } from '../models/UserCreate';
 import type { UserResponse } from '../models/UserResponse';
 import type { WarningMessageCreate } from '../models/WarningMessageCreate';
@@ -36,18 +40,74 @@ export class Service {
         });
     }
     /**
-     * 用户注册
-     * 注册一个新用户
+     * 注册第1步：发送注册验证码
      * @param requestBody
-     * @returns UserResponse Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
-    public static registerUserApiV1UsersRegisterPost(
+    public static sendRegisterCodeApiV1UsersSendRegisterCodePost(
+        requestBody: SendCodeRequest,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/users/send-register-code',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 注册第2步：校验验证码并创建账号
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static registerApiV1UsersRegisterPost(
         requestBody: UserCreate,
-    ): CancelablePromise<UserResponse> {
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/users/register',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 找回密码第1步：发送重置验证码
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static forgotPasswordApiV1UsersForgotPasswordPost(
+        requestBody: PasswordResetRequest,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/users/forgot-password',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 找回密码第2步：校验并设置新密码
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static resetPasswordApiV1UsersResetPasswordPost(
+        requestBody: PasswordResetConfirm,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/users/reset-password',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -112,6 +172,26 @@ export class Service {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/v1/users/admin/delete-user',
+        });
+    }
+    /**
+     * 修改当前登录用户的密码
+     * 修改密码。需要验证旧密码是否正确。
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static changePasswordApiV1UsersChangePasswordPut(
+        requestBody: UserChangePassword,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/users/change-password',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
     /**
