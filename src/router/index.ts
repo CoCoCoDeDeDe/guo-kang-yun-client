@@ -4,19 +4,19 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   { path: '/login', name: 'Login', component: () => import('../views/Login.vue')
   },
-  {
-    path: '/',
-    name: 'Main',
-    component: () => import('../layout/MainLayout.vue'),  // 底部导航容器
-    redirect: '/home',
-    children: [
-      { path: 'home', name: 'Home', component: () => import('../views/Home.vue') },
-      { path: 'encyclopedia', name: 'Encyclopedia', component: () => import('../views/PestList.vue') },
-      { path: 'community', name: 'Community', component: () => import('../views/Community.vue') },
-      { path: 'profile', name: 'Profile', component: () => import('../views/Profile.vue') },
-    ]
-  },
-  { path: '/pest/detail/:id', name: 'PestDetail', component: () => import('../views/PestDetail.vue') },
+  // {
+  //   path: '/',
+  //   name: 'Main',
+  //   component: () => import('../layout/MainLayout.vue'),  // 底部导航容器
+  //   redirect: '/home',
+  //   children: [
+  //     { path: 'home', name: 'Home', component: () => import('../views/Home.vue') },
+  //     { path: 'encyclopedia', name: 'Encyclopedia', component: () => import('../views/PestList.vue') },
+  //     { path: 'community', name: 'Community', component: () => import('../views/Community.vue') },
+  //     { path: 'profile', name: 'Profile', component: () => import('../views/Profile.vue') },
+  //   ]
+  // },
+  // { path: '/pest/detail/:id', name: 'PestDetail', component: () => import('../views/PestDetail.vue') },
 ]
 
 const router = createRouter({
