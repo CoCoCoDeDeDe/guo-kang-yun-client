@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Geolocation } from '@capacitor/geolocation';
 
-defineProps<{ msg: string }>()
+// defineProps<{ msg: string }>()
 
 const count = ref(0)
 
@@ -24,8 +24,6 @@ const getCurrentPosition = async () => {
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
-
   <div class="card">
     <button type="button" @click="count++">count is {{ count }}</button>
     <p>
