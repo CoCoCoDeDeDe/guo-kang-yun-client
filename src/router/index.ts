@@ -85,6 +85,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/PostCreate.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/message/list',
+    name: 'MessageList',
+    component: () => import('../views/MessageList.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
