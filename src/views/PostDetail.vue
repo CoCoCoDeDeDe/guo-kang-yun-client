@@ -1,0 +1,274 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { showToast, showImagePreview } from 'vant'
+import { Service } from '../api/generated'
+import type { PostResponse } from '../api/generated'
+
+const route = useRoute()
+const router = useRouter()
+
+const postId = Number(route.params.id)
+const postInfo = ref<PostResponse | null>(null)
+const loading = ref(true)
+
+// 获取帖子详情
+const fetchPostDetail = async () => {
+  loading.value = true
+  try {
+    // 【注意】当前 API 没有获取单条帖子的接口，这里拉取近期列表并在前端匹配
+    const res = await Service.readPostsApiV1CommunityPostsGet(0, 100)
+    const foundPost = res.find(item => item.id === postId)
+
+    if (foundPost) {
+      postInfo.value = foundPost
+    } else {
+      showToast('帖子不存在或已被删除')
+      router.replace('/community')
+    }
+  } catch (error) {
+    console.error('获取帖子详情失败', error)
+    showToast('获取数据失败，请检查网络')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  if (postId) {
+    fetchPostDetail()
+  } else {
+    showToast('参数错误')
+    router.replace('/community')
+  }
+})
+
+// 返回社区页
+const onClickLeft = () => {
+  router.push('/community')
+}
+
+// 格式化日期
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '未知时间'
+  return new Date(dateStr).toLocaleString()
+}
+
+// 预览帖子图片 (如果后端 PostResponse 中包含 photos/images 字段)
+const previewImage = (index: number) => {
+  // 注意：如果实际生成的 PostResponse 中没有 photos 字段，请联系后端加上，
+  // 因为求助帖通常需要发病害照片
+  const images = (postInfo.value as any)?.photos || []
+  if (images.length > 0) {
+    showImagePreview({
+      images,
+      startPosition: index
+    })
+  }
+}
+
+// 模拟互动功能
+const handleLike = () => {
+  showToast('点赞成功')
+}
+
+const handleComment = () => {
+  // 实际项目中可唤起评论输入框或跳转到评论详情
+  showToast('唤起评论输入...')
+}
+</script>
+
+<template>
+  <div class="post-detail-container">
+    <van-nav-bar 
+      title="帖子详情" 
+      left-text="返回" 
+      left-arrow 
+      fixed 
+      placeholder 
+      border
+      @click-left="onClickLeft" 
+    />
+
+    <van-skeleton title avatar :row="10" :loading="loading" class="skeleton-wrap">
+      <div v-if="postInfo" class="post-body">
+        
+        <div class="author-header van-hairline--bottom">
+          <van-image
+            class="avatar"
+            round
+            width="44"
+            height="44"
+            src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
+          />
+          <div class="author-meta">
+            <span class="name">果农用户_{{ postInfo.author_id || '匿名' }}</span>
+            <span class="time">{{ formatDate(postInfo.create_at) }}</span>
+          </div>
+          <van-button size="small" type="primary" plain round class="follow-btn">
+            关注
+          </van-button>
+        </div>
+
+        <div class="post-content">
+          <h1 class="title">{{ postInfo.title }}</h1>
+          <p class="content-text">{{ postInfo.content }}</p>
+          
+          <div class="photo-grid" v-if="(postInfo as any).photos?.length">
+            <van-image
+              v-for="(img, index) in (postInfo as any).photos"
+              :key="index"
+              width="30vw"
+              height="30vw"
+              fit="cover"
+              radius="6"
+              :src="img"
+              class="grid-img"
+              @click="previewImage(Number(index))"
+            />
+          </div>
+        </div>
+
+        <van-divider>没有更多内容了</van-divider>
+
+        </div>
+    </van-skeleton>
+
+    <van-action-bar v-if="!loading && postInfo" class="custom-action-bar van-hairline--top">
+      <div class="comment-input-mock" @click="handleComment">
+        <van-icon name="edit" /> 说点什么...
+      </div>
+      
+      <div class="action-icons">
+        <div class="icon-item" @click="handleComment">
+          <van-icon name="chat-o" size="22" />
+          <span class="count">评论</span>
+        </div>
+        <div class="icon-item" @click="handleLike">
+          <van-icon name="good-job-o" size="22" />
+          <span class="count">点赞</span>
+        </div>
+      </div>
+    </van-action-bar>
+
+  </div>
+</template>
+
+<style scoped>
+.post-detail-container {
+  background-color: #fff;
+  min-height: 100vh;
+  padding-bottom: 60px; /* 给底部 ActionBar 留出空间 */
+}
+
+.skeleton-wrap {
+  margin-top: 20px;
+}
+
+/* 用户信息栏 */
+.author-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: #fff;
+}
+
+.author-meta {
+  flex: 1;
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.author-meta .name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #323233;
+}
+
+.author-meta .time {
+  font-size: 12px;
+  color: #969799;
+  margin-top: 4px;
+}
+
+.follow-btn {
+  height: 28px;
+  padding: 0 12px;
+}
+
+/* 正文区域 */
+.post-content {
+  padding: 16px;
+}
+
+.post-content .title {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #323233;
+  line-height: 1.4;
+}
+
+.content-text {
+  font-size: 16px;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap; /* 保留换行符 */
+  word-wrap: break-word;
+  margin-bottom: 16px;
+}
+
+/* 图片网格 */
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.grid-img {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 自定义底部操作栏 (针对帖子进行UI调整) */
+.custom-action-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  justify-content: space-between;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.02);
+  z-index: 100;
+}
+
+.comment-input-mock {
+  flex: 1;
+  height: 36px;
+  background-color: #f2f3f5;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  color: #969799;
+  font-size: 14px;
+  gap: 6px;
+  margin-right: 20px;
+}
+
+.action-icons {
+  display: flex;
+  gap: 20px;
+}
+
+.icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #646566;
+}
+
+.icon-item .count {
+  font-size: 10px;
+  margin-top: 2px;
+}
+</style>

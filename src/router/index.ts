@@ -73,6 +73,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/ArticleDetail.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/post/detail/:id',
+    name: 'PostDetail',
+    component: () => import('../views/PostDetail.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
@@ -81,7 +87,7 @@ const router = createRouter({
 })
 
 // 路由守卫逻辑
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _, next) => {
   const token = localStorage.getItem('token')
   if (to.meta.requiresAuth && !token) {
     next('/login')
