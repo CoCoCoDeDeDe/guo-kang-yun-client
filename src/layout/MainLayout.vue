@@ -54,13 +54,16 @@ const tabs = [
 .layout-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;  /** 固定高度 */
+  overflow: hidden; /** 防止整体滚动 */
 }
 
 .layout-content {
   flex: 1;
   padding-bottom: constant(safe-area-inset-bottom); /* 兼容 iOS */
   padding-bottom: env(safe-area-inset-bottom);
+  overflow-y: auto; /** 让内容区域内部可竖向滚动 */
+  background-color: #f7f8fa;  /** 统一设置背景色 */
 }
 
 /* 简单的页面切换过渡动画（可选） */

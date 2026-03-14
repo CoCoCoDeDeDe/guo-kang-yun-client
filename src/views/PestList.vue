@@ -122,15 +122,13 @@ const formatCategory = (cat: string) => {
 
       </van-tab>
     </van-tabs>
-
-    <div class="bottom-placeholder"></div>
+    
   </div>
 </template>
 
 <style scoped>
 .pest-list-container {
   background-color: #fff;
-  min-height: 100vh;
 }
 
 .data-list {

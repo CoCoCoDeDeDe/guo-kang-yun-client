@@ -103,15 +103,13 @@ const navigateTo = (path: string) => router.push(path)
         </van-card>
       </div>
     </van-skeleton>
-
-    <div class="bottom-space"></div>
+    
   </div>
 </template>
 
 <style scoped>
 .home-container {
   background-color: #f7f8fa;
-  min-height: 100vh;
 }
 
 .my-swipe {
