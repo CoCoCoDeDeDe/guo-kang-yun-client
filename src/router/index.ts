@@ -30,13 +30,13 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'community',
         name: 'Community',
-        component: () => import('../views/Community.vue'), // 待创建
+        component: () => import('../views/Community.vue'),
         meta: { requiresAuth: true }
       },
       {
         path: 'profile',
         name: 'Profile',
-        component: () => import('../views/Profile.vue'), // 待创建
+        component: () => import('../views/Profile.vue'),
         meta: { requiresAuth: true }
       }
     ]
@@ -46,13 +46,19 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/pest/detail/:id',
     name: 'PestDetail',
-    component: () => import('../views/PestDetail.vue'), // 待创建
+    component: () => import('../views/PestDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/record/list',
+    name: 'RecordList',
+    component: () => import('../views/RecordList.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/record/form',
     name: 'RecordForm',
-    component: () => import('../views/RecordForm.vue'), // 待创建
+    component: () => import('../views/RecordForm.vue'),
     meta: { requiresAuth: true }
   }
 ]
