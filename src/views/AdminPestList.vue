@@ -142,7 +142,7 @@ const onEdit = (id: number) => {
 
 // 添加知识 (附加功能，方便管理员添加)
 const onAdd = () => {
-  router.push('/admin/pest/edit/new');
+  router.push('/admin/pest/post');
 };
 
 // 删除知识
