@@ -97,6 +97,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/MessageDetail.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/profile/edit',
+    name: 'ProfileEdit',
+    component: () => import('../views/ProfileEdit.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
