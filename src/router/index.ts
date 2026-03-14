@@ -79,6 +79,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/PostDetail.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/post/create',
+    name: 'PostCreate',
+    component: () => import('../views/PostCreate.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
