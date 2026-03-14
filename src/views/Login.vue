@@ -104,7 +104,7 @@ const goToForgot = () => router.push('/forgot-password')
 .login-wrapper {
   padding: 40px 20px;
   background-color: #f7f8fa;
-  min-height: 100vh;
+  /* min-height: 100vh; */
 }
 
 .header {

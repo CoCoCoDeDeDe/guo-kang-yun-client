@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'encyclopedia',
         name: 'Encyclopedia',
-        component: () => import('../views/PestList.vue'), // 待创建
+        component: () => import('../views/PestList.vue'),
         meta: { requiresAuth: true, keepAlive: true }
       },
       {

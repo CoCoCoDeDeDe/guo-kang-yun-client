@@ -13,7 +13,8 @@ import {
   Tabbar, TabbarItem, NavBar, NoticeBar, 
   Swipe, SwipeItem, Grid, GridItem, 
   Tag, Card, Skeleton, Divider, Icon,
-  Image as VanImage, Lazyload, PullRefresh, List, Search
+  Image as VanImage, Lazyload, PullRefresh, List, Search,
+  Tabs, Tab,
 } from 'vant'
 
 // 1. 配置后端的真实接口地址
@@ -68,6 +69,7 @@ app.use(Tabbar).use(TabbarItem).use(NavBar).use(NoticeBar)
 app.use(Swipe).use(SwipeItem).use(Grid).use(GridItem)
 app.use(Tag).use(Card).use(Skeleton).use(Divider).use(Icon)
 app.use(VanImage).use(PullRefresh).use(List).use(Search)
+app.use(Tab).use(Tabs)
 app.use(Lazyload)
 
 app.mount('#app')
