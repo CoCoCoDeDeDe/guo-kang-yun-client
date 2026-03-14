@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { showToast, showSuccessToast, showFailToast } from 'vant'
+import { showSuccessToast, showFailToast } from 'vant'
 import { Service } from '../api/generated'
 
 const router = useRouter()
