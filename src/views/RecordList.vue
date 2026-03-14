@@ -72,20 +72,18 @@ const formatDate = (dateStr?: string) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-// 辅助函数：解析状态标签颜色与文案 (根据你实际后端的 GovernanceStatusEnum 调整)
+// 辅助函数：解析状态标签颜色与文案 (根据真实的后端枚举值修改)
 const getStatusProps = (status?: string) => {
-  // 假设状态为 'PENDING'(待处理), 'PROCESSING'(治理中), 'RESOLVED'(已解决)
   switch (status) {
-    case 'RESOLVED':
-    case '已解决':
+    case 'completed': // 已解决/已完成
       return { type: 'success', text: '已解决', color: '#07c160' }
-    case 'PROCESSING':
-    case '治理中':
+    case 'in_progress': // 治理中/进行中
       return { type: 'primary', text: '治理中', color: '#1989fa' }
-    case 'PENDING':
-    case '待处理':
+    case 'cancelled': // 已取消/待处理或其他
+      return { type: 'warning', text: '已取消', color: '#ff976a' }
     default:
-      return { type: 'warning', text: '待处理', color: '#ff976a' }
+      // 如果还有默认的待处理状态，可以放在这里
+      return { type: 'default', text: '未知状态', color: '#969799' }
   }
 }
 </script>
@@ -121,6 +119,7 @@ const getStatusProps = (status?: string) => {
             :key="item.id" 
             class="record-card"
             @click="goToDetail(item.id!)"
+            :style="{ '--card-bar-color': getStatusProps(item.status as string).color }"
           >
             <div class="card-header van-hairline--bottom">
               <span class="date"><van-icon name="clock-o" /> {{ formatDate(item.found_time) }}</span>
@@ -189,9 +188,11 @@ const getStatusProps = (status?: string) => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   overflow: hidden;
   position: relative;
+  /* 默认颜色，会被内联样式覆盖 */
+  --card-bar-color: #07c160; 
 }
 
-/* 左侧颜色装饰条，可根据状态动态绑定，这里用统一的绿色作示例 */
+/* 左侧颜色装饰条，使用 CSS 变量动态绑定颜色 */
 .record-card::before {
   content: '';
   position: absolute;
@@ -199,7 +200,7 @@ const getStatusProps = (status?: string) => {
   top: 0;
   bottom: 0;
   width: 4px;
-  background-color: #07c160;
+  background-color: var(--card-bar-color);
 }
 
 .card-header {

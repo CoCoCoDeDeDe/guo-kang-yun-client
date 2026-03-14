@@ -31,9 +31,10 @@ onMounted(() => {
 
 // 判断是否为B端用户（专家或管理员）。假设 RoleEnum 中 0=果农, 1=专家, 2=管理员
 const isBEndUser = computed(() => {
-  if (!userInfo.value) return false
+  if (!userInfo.value || userInfo.value.role === undefined) return false
   // 只要 role 大于 0，即可认为是B端工作人员（专家/管理员）
-  return userInfo.value.role !== 0
+  // 考虑到严格的 TS 枚举类型，这里转一下 Number 判断更稳妥
+  return Number(userInfo.value.role) !== 0
 })
 
 // 路由跳转
@@ -63,14 +64,14 @@ const handleLogout = () => {
             width="64"
             height="64"
             fit="cover"
-            :src="userInfo.avatar_url || 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'"
+            src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
           />
           <div class="user-detail">
-            <h2 class="name">{{ userInfo.full_name || '未命名用户' }}</h2>
+            <h2 class="name">{{ userInfo.username || '未命名用户' }}</h2>
             <p class="email">{{ userInfo.email }}</p>
             <div class="role-tag">
               <van-tag :type="isBEndUser ? 'primary' : 'success'" plain size="medium">
-                {{ isBEndUser ? (userInfo.role === 2 ? '系统管理员' : '农业专家') : '果农' }}
+                {{ isBEndUser ? (Number(userInfo.role) === 2 ? '系统管理员' : '农业专家') : '果农' }}
               </van-tag>
             </div>
           </div>
