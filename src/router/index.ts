@@ -91,6 +91,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/MessageList.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/message/detail',
+    name: 'MessageDetail',
+    component: () => import('../views/MessageDetail.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
