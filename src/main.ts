@@ -8,7 +8,13 @@ import axios from 'axios'
 // 引入 Router 和 Vant
 import router from './router'
 import 'vant/lib/index.css'
-import { Button, Field, CellGroup, Form, Toast } from 'vant'
+import { 
+  Button, Field, CellGroup, Form, Toast, 
+  Tabbar, TabbarItem, NavBar, NoticeBar, 
+  Swipe, SwipeItem, Grid, GridItem, 
+  Tag, Card, Skeleton, Divider, Icon,
+  Image as VanImage, Lazyload, PullRefresh, List, Search
+} from 'vant'
 
 // 1. 配置后端的真实接口地址
 OpenAPI.BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
@@ -56,6 +62,12 @@ const app = createApp(App)
 
 // 如果配置了 router 或 pinia，在这里 use 它们
 app.use(router)
+// 注册组件
 app.use(Button).use(Field).use(CellGroup).use(Form).use(Toast)
+app.use(Tabbar).use(TabbarItem).use(NavBar).use(NoticeBar)
+app.use(Swipe).use(SwipeItem).use(Grid).use(GridItem)
+app.use(Tag).use(Card).use(Skeleton).use(Divider).use(Icon)
+app.use(VanImage).use(PullRefresh).use(List).use(Search)
+app.use(Lazyload)
 
 app.mount('#app')
