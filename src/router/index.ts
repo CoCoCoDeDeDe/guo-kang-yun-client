@@ -66,7 +66,13 @@ const routes: RouteRecordRaw[] = [
     name: 'RecordForm',
     component: () => import('../views/RecordDetail.vue'),
     meta: { requiresAuth: true }
-  }
+  },
+  {
+    path: '/article/detail/:id',
+    name: 'ArticleDetail',
+    component: () => import('../views/ArticleDetail.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
