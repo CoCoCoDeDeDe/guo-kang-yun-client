@@ -1,3 +1,4 @@
+<!-- src\views\Profile.vue -->
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -127,6 +128,12 @@ const handleLogout = () => {
         icon="warn-o" 
         is-link 
         @click="navigateTo('/admin/warning-publish')" 
+      />
+      <van-cell 
+        title="管理知识库" 
+        icon="description-o" 
+        is-link 
+        @click="navigateTo('/admin/pest/list')" 
       />
     </van-cell-group>
 

@@ -1,13 +1,63 @@
+<!-- src\views\Community.vue -->
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue' // 引入 onMounted 和 computed
 import { useRouter } from 'vue-router'
 import { Service } from '../api/generated'
-import type { ArticleResponse, PostResponse } from '../api/generated'
+import type { ArticleResponse, PostResponse, UserResponse } from '../api/generated'
 
 const router = useRouter()
 
 // 当前激活的标签
 const activeTab = ref('articles')
+
+// ================= 0. 用户信息与权限逻辑 =================
+const userInfo = ref<UserResponse | null>(null)
+
+// 获取当前登录用户信息
+const fetchUserInfo = async () => {
+  try {
+    const res = await Service.readUsersMeApiV1UsersMeGet()
+    userInfo.value = res
+  } catch (error) {
+    console.error('获取用户信息失败', error)
+  }
+}
+
+onMounted(() => {
+  fetchUserInfo()
+})
+
+// 判断是否有发布科普文章的权限 (角色枚举不为 0)
+const canPublishArticle = computed(() => {
+  if (!userInfo.value || userInfo.value.role === undefined) return false
+  return Number(userInfo.value.role) !== 0
+})
+
+// 控制 FAB 是否显示
+const showFab = computed(() => {
+  if (activeTab.value === 'posts') {
+    return true // 果农交流一直显示
+  } else if (activeTab.value === 'articles') {
+    return canPublishArticle.value // 科普文章仅有权限时显示
+  }
+  return false
+})
+
+// 动态配置 FAB 的样式和点击事件
+const fabConfig = computed(() => {
+  if (activeTab.value === 'articles') {
+    return {
+      color: '#1989fa', // 蓝色
+      shadow: 'rgba(25, 137, 250, 0.4)',
+      handler: goToAdminPublishArticle
+    }
+  }
+  return {
+    color: '#07c160', // 绿色 (果农交流)
+    shadow: 'rgba(7, 193, 96, 0.4)',
+    handler: goToCreatePost
+  }
+})
 
 // ================= 1. 文章专栏状态与逻辑 =================
 const articles = ref<ArticleResponse[]>([])
@@ -23,14 +73,14 @@ const onArticleLoad = async () => {
   try {
     articleLoading.value = true;
     const res = await Service.readArticlesApiV1CommunityArticlesGet(articleSkip, articleLimit)
-    
+
     if (articleRefreshing.value) {
       articles.value = res
       articleRefreshing.value = false
     } else {
       articles.value.push(...res)
     }
-    
+
     articleSkip += articleLimit
     if (res.length < articleLimit) {
       articleFinished.value = true
@@ -65,14 +115,14 @@ const onPostLoad = async () => {
   try {
     postLoading.value = true;
     const res = await Service.readPostsApiV1CommunityPostsGet(postSkip, postLimit)
-    
+
     if (postRefreshing.value) {
       posts.value = res
       postRefreshing.value = false
     } else {
       posts.value.push(...res)
     }
-    
+
     postSkip += postLimit
     if (res.length < postLimit) {
       postFinished.value = true
@@ -94,6 +144,10 @@ const onPostRefresh = () => {
 
 
 // ================= 3. 路由跳转逻辑 =================
+const goToAdminPublishArticle = () => {
+  router.push('/admin/article-publish')
+}
+
 const goToCreatePost = () => {
   router.push('/post/create')
 }
@@ -122,22 +176,13 @@ const formatDate = (dateString?: string) => {
     </van-nav-bar>
 
     <van-tabs v-model:active="activeTab" sticky offset-top="0" color="#07c160">
-      
+
       <van-tab title="科普文章" name="articles">
         <van-pull-refresh v-model="articleRefreshing" @refresh="onArticleRefresh">
-          <van-list
-            v-model:loading="articleLoading"
-            :finished="articleFinished"
-            finished-text="没有更多文章了"
-            @load="onArticleLoad"
-            class="list-wrapper"
-          >
-            <div 
-              v-for="item in articles" 
-              :key="item.id" 
-              class="card-item article-card"
-              @click="goToArticleDetail(item.id!)"
-            >
+          <van-list v-model:loading="articleLoading" :finished="articleFinished" finished-text="没有更多文章了"
+            @load="onArticleLoad" class="list-wrapper">
+            <div v-for="item in articles" :key="item.id" class="card-item article-card"
+              @click="goToArticleDetail(item.id!)">
               <div class="article-content">
                 <h3 class="title van-multi-ellipsis--l2">{{ item.title }}</h3>
                 <p class="desc van-multi-ellipsis--l2">{{ item.content }}</p>
@@ -146,14 +191,8 @@ const formatDate = (dateString?: string) => {
                   <van-tag plain type="primary" size="medium">官方</van-tag>
                 </div>
               </div>
-              <van-image
-                class="article-img"
-                width="80"
-                height="80"
-                radius="8"
-                fit="cover"
-                src="https://fastly.jsdelivr.net/npm/@vant/assets/ipad.jpeg"
-              />
+              <van-image class="article-img" width="80" height="80" radius="8" fit="cover"
+                src="https://fastly.jsdelivr.net/npm/@vant/assets/ipad.jpeg" />
             </div>
           </van-list>
         </van-pull-refresh>
@@ -161,26 +200,11 @@ const formatDate = (dateString?: string) => {
 
       <van-tab title="果农交流" name="posts">
         <van-pull-refresh v-model="postRefreshing" @refresh="onPostRefresh">
-          <van-list
-            v-model:loading="postLoading"
-            :finished="postFinished"
-            finished-text="没有更多帖子了"
-            @load="onPostLoad"
-            class="list-wrapper"
-          >
-            <div 
-              v-for="post in posts" 
-              :key="post.id" 
-              class="card-item post-card"
-              @click="goToPostDetail(post.id!)"
-            >
+          <van-list v-model:loading="postLoading" :finished="postFinished" finished-text="没有更多帖子了" @load="onPostLoad"
+            class="list-wrapper">
+            <div v-for="post in posts" :key="post.id" class="card-item post-card" @click="goToPostDetail(post.id!)">
               <div class="post-header">
-                <van-image
-                  round
-                  width="40"
-                  height="40"
-                  src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
-                />
+                <van-image round width="40" height="40" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
                 <div class="author-info">
                   <span class="name">果农用户_{{ post.author_id || '匿名' }}</span>
                   <span class="time">{{ formatDate(post.create_at) }}</span>
@@ -188,7 +212,7 @@ const formatDate = (dateString?: string) => {
               </div>
               <h3 class="post-title">{{ post.title }}</h3>
               <p class="post-desc van-multi-ellipsis--l3">{{ post.content }}</p>
-              
+
               <div class="post-actions">
                 <span><van-icon name="good-job-o" /> 赞</span>
                 <span><van-icon name="chat-o" /> 评论</span>
@@ -200,7 +224,10 @@ const formatDate = (dateString?: string) => {
 
     </van-tabs>
 
-    <div class="fab-button" @click="goToCreatePost">
+    <div v-if="showFab" class="fab-button" :style="{
+      backgroundColor: fabConfig.color,
+      boxShadow: `0 4px 12px ${fabConfig.shadow}`
+    }" @click="fabConfig.handler">
       <van-icon name="plus" />
     </div>
 
@@ -324,19 +351,19 @@ const formatDate = (dateString?: string) => {
 .fab-button {
   position: fixed;
   right: 20px;
-  bottom: 80px; /* 留出 Tabbar 的高度 */
+  bottom: 80px;
+  /* 留出 Tabbar 的高度 */
   width: 50px;
   height: 50px;
-  background-color: #07c160;
   color: #fff;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 24px;
-  box-shadow: 0 4px 12px rgba(7, 193, 96, 0.4);
   z-index: 99;
-  transition: transform 0.1s;
+  /* 💡 修改点：加入 transition 使颜色变化平滑 */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s;
 }
 
 .fab-button:active {
