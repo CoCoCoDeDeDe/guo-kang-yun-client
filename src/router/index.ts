@@ -92,7 +92,7 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/message/detail',
+    path: '/message/detail/:id',
     name: 'MessageDetail',
     component: () => import('../views/MessageDetail.vue'),
     meta: { requiresAuth: true }
