@@ -115,6 +115,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/AuditAction.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/admin/article-publish',
+    name: 'ArticlePublish',
+    component: () => import('../views/ArticlePublish.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
