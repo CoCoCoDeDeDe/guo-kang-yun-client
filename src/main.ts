@@ -15,7 +15,7 @@ import {
   Tag, Card, Skeleton, Divider, Icon,
   Image as VanImage, Lazyload, PullRefresh, List, Search,
   Tabs, Tab, Empty, Cell, Badge, Radio, RadioGroup, Uploader, DatePicker, Popup, Picker,
-  ActionBarButton, ActionBar, Dialog
+  ActionBarButton, ActionBar, Dialog, ActionBarIcon, SwipeCell
 } from 'vant'
 
 // 1. 配置后端的真实接口地址
@@ -71,7 +71,7 @@ app.use(Swipe).use(SwipeItem).use(Grid).use(GridItem)
 app.use(Tag).use(Card).use(Skeleton).use(Divider).use(Icon)
 app.use(VanImage).use(PullRefresh).use(List).use(Search)
 app.use(Tab).use(Tabs).use(Empty).use(Cell).use(Badge).use(Radio).use(RadioGroup).use(Uploader).use(DatePicker).use(Popup).use(Picker)
-app.use(ActionBarButton).use(ActionBar).use(Dialog)
+app.use(ActionBarButton).use(ActionBar).use(Dialog).use(ActionBarIcon).use(SwipeCell)
 
 app.use(Lazyload)
 

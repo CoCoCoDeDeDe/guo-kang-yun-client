@@ -127,6 +127,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/WarningPublish.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/admin/pest/list',
+    name: 'AdminPestList',
+    component: () => import('../views/AdminPestList.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
