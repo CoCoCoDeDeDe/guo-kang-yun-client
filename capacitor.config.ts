@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: '果康云',
   webDir: 'dist',
   server: {
-    url: 'http://localhost:5173',
+    // url: 'http://10.27.89.34:5173/home',
     cleartext: true,
   }
 };
