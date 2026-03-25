@@ -19,7 +19,18 @@
 
         <van-field v-model="formData.peak_season" name="peak_season" label="高发期" placeholder="请输入高发季节或时期 (选填)" />
 
-        <van-field v-model="formData.typical_image" name="typical_image" label="典型图片" placeholder="请输入图片URL链接 (选填)" />
+        <van-field name="typical_image" label="典型图片" label-align="top">
+          <template #input>
+            <van-uploader 
+              v-model="fileList" 
+              :max-count="1" 
+              :max-size="5 * 1024 * 1024"
+              :after-read="afterRead"
+              @oversize="onOversize" 
+              upload-text="上传图片" 
+            />
+          </template>
+        </van-field>
 
         <van-field v-model="formData.symptom_description" name="symptom_description" label="症状描述" type="textarea"
           rows="3" autosize placeholder="请输入详细的症状描述 (选填)" />
@@ -49,22 +60,20 @@ const router = useRouter();
 const isSubmitting = ref(false);
 
 // 表单响应式数据
-// 💡 修改点在这里：去掉 <PestInfoCreate> 泛型，让 TS 自动推断这些字段为纯 string 类型
-// 这样 Vant 组件的 v-model 就不会因为 null 报错了
 const formData = ref({
   name: '',
   category: '' as PestCategoryEnum,
   affected_part: '',
   symptom_description: '',
   peak_season: '',
-  typical_image: '',
 });
+
+// 新增：图片上传列表
+const fileList = ref<any[]>([]);
 
 // 分类选择器相关逻辑
 const showCategoryPicker = ref(false);
 
-// 根据您的实际业务场景，这里填充 PestCategoryEnum 可能的值
-// 如果后端 OpenAPI 确切枚举值为别的，请修改此处的 value 值
 const categoryColumns = [
   { text: '病害', value: '病害' },
   { text: '虫害', value: '虫害' },
@@ -84,19 +93,62 @@ const onClickLeft = () => {
   router.push('/admin/pest/list');
 };
 
+// 新增：处理图片上传逻辑
+const afterRead = async (fileItem: any | any[]) => {
+  const items = Array.isArray(fileItem) ? fileItem : [fileItem];
+
+  for (const item of items) {
+    item.status = 'uploading';
+    item.message = '上传中...';
+
+    try {
+      const res = await Service.uploadSingleImageApiV1UploadImagePost({
+        file: item.file as any
+      });
+      
+      item.status = 'done';
+      item.message = '上传成功';
+      item.url = res.image_url; // 供 Vant 预览使用
+      item.backendPath = res.image_url; // 暂存后端返回的真实相对路径
+    } catch (error) {
+      console.error('图片上传失败:', error);
+      item.status = 'failed';
+      item.message = '上传失败';
+    }
+  }
+};
+
+const onOversize = () => {
+  showToast('图片大小不能超过 5MB');
+};
+
 // 提交表单处理
 const onSubmit = async () => {
+  // 校验是否有图片正在上传中或失败
+  if (fileList.value.some(item => item.status === 'uploading')) {
+    showToast('请等待图片上传完成');
+    return;
+  }
+  if (fileList.value.some(item => item.status === 'failed')) {
+    showToast('有图片上传失败，请移除或重试');
+    return;
+  }
+
   isSubmitting.value = true;
   try {
-    // 过滤掉空字符串，将其转为 undefined 或 null（根据后端要求，通常传 null 或直接不传可选字段）
-    // 这里为了避免传递无意义的空字符串给后端 null 字段
+    // 提取上传好的典型图片路径
+    let finalImageUrl = '';
+    if (fileList.value.length > 0) {
+      finalImageUrl = fileList.value[0].backendPath || fileList.value[0].url;
+    }
+
     const submitData: PestInfoCreate = {
       name: formData.value.name,
       category: formData.value.category,
       affected_part: formData.value.affected_part || null,
       symptom_description: formData.value.symptom_description || null,
       peak_season: formData.value.peak_season || null,
-      typical_image: formData.value.typical_image || null,
+      typical_image: finalImageUrl || null,
     };
 
     await Service.createPestInfoApiV1KnowledgePestsPost(submitData);
@@ -121,6 +173,7 @@ const onSubmit = async () => {
 </script>
 
 <style scoped>
+/* 保持原有样式不变 */
 .pest-post-page {
   min-height: 100vh;
   background-color: #f7f8fa;
