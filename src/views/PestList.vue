@@ -4,6 +4,9 @@ import { useRouter } from 'vue-router'
 import { Service } from '../api/generated'
 import type { PestInfoResponse } from '../api/generated'
 
+// 获取真实后端地址
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+
 const router = useRouter()
 
 // 状态变量
@@ -22,6 +25,20 @@ const limit = 10
 
 // 内部锁，防止手动调用 onRefresh 和 van-list 自动触发冲突
 let isFetching = false
+
+// 默认占位图
+const defaultThumb = 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'
+
+// 辅助函数：获取完整图片真实地址
+const getImageUrl = (url?: string | null) => {
+  if (!url) return defaultThumb
+  if (url.startsWith('http')) return url
+  
+  const cleanBase = API_BASE.replace(/\/$/, '')
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`
+  
+  return `${cleanBase}${cleanUrl}`
+}
 
 const onLoad = async () => {
   // 1. 如果已经加载完成，或者正在进行网络请求，直接返回
@@ -99,8 +116,10 @@ const formatCategory = (cat: string) => cat || '未知'
       <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad" class="data-list"
         :immediate-check="false">
         <div v-for="item in list" :key="item.id" class="pest-card van-hairline--bottom" @click="goToDetail(item.id!)">
+          
           <van-image width="100" height="80" fit="cover" radius="8"
-            :src="item.typical_image || 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'" class="pest-image" />
+            :src="getImageUrl(item.typical_image)" class="pest-image" />
+            
           <div class="pest-info">
             <h3 class="pest-name">{{ item.name }}</h3>
             <van-tag plain type="success" class="pest-tag">{{ formatCategory(item.category) }}</van-tag>
@@ -116,6 +135,7 @@ const formatCategory = (cat: string) => cat || '未知'
 </template>
 
 <style scoped>
+/* 保持原有样式不变 */
 .pest-list-container {
   background-color: #fff;
 }
