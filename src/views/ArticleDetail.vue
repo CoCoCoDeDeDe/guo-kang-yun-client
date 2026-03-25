@@ -54,15 +54,6 @@ const formatDate = (dateStr?: string) => {
   if (!dateStr) return '未知时间'
   return new Date(dateStr).toLocaleString()
 }
-
-// 模拟互动功能
-const handleLike = () => {
-  showToast('点赞成功')
-}
-
-const handleCollect = () => {
-  showToast('已收藏')
-}
 </script>
 
 <template>
@@ -109,13 +100,6 @@ const handleCollect = () => {
 
       </div>
     </van-skeleton>
-
-    <van-action-bar v-if="!loading && articleInfo" class="custom-action-bar">
-      <van-action-bar-icon icon="chat-o" text="评论" @click="showToast('评论功能开发中')" />
-      <van-action-bar-icon icon="good-job-o" text="点赞" @click="handleLike" />
-      <van-action-bar-icon icon="star-o" text="收藏" @click="handleCollect" />
-      <van-action-bar-icon icon="share-o" text="分享" @click="showToast('分享功能开发中')" />
-    </van-action-bar>
 
   </div>
 </template>

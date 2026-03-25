@@ -83,16 +83,6 @@ const previewImage = (index: number) => {
     })
   }
 }
-
-// 模拟互动功能
-const handleLike = () => {
-  showToast('点赞成功')
-}
-
-const handleComment = () => {
-  // 实际项目中可唤起评论输入框或跳转到评论详情
-  showToast('唤起评论输入...')
-}
 </script>
 
 <template>
@@ -150,23 +140,6 @@ const handleComment = () => {
 
       </div>
     </van-skeleton>
-
-    <van-action-bar v-if="!loading && postInfo" class="custom-action-bar van-hairline--top">
-      <div class="comment-input-mock" @click="handleComment">
-        <van-icon name="edit" /> 说点什么...
-      </div>
-      
-      <div class="action-icons">
-        <div class="icon-item" @click="handleComment">
-          <van-icon name="chat-o" size="22" />
-          <span class="count">评论</span>
-        </div>
-        <div class="icon-item" @click="handleLike">
-          <van-icon name="good-job-o" size="22" />
-          <span class="count">点赞</span>
-        </div>
-      </div>
-    </van-action-bar>
 
   </div>
 </template>
