@@ -14,6 +14,12 @@ const routes: RouteRecordRaw[] = [
     name: 'Register',
     component: () => import('../views/Register.vue')
   },
+  // 找回密码页面（不需要底部导航栏）
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('../views/ForgotPassword.vue')
+  },
 
   // 主页面结构（带底部导航栏）
   {
