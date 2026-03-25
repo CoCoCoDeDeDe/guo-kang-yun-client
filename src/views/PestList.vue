@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Service } from '../api/generated'
 import type { PestInfoResponse } from '../api/generated'
@@ -14,10 +14,6 @@ const list = ref<PestInfoResponse[]>([])
 const loading = ref(false)   // 由 van-list 自动控制 true，由我们手动控制 false
 const finished = ref(false)
 const refreshing = ref(false)
-const searchText = ref('')
-const activeTab = ref<string>('全部')
-
-const categories = ['全部', '害虫', '病害', '杂草', '其他']
 
 // 分页参数
 let skip = 0
@@ -73,26 +69,20 @@ const onLoad = async () => {
   }
 }
 
-// 监听标签切换
-watch(activeTab, () => {
-  onRefresh()
+// 👇 修复点1：页面初始化时，主动拉取第一页数据
+onMounted(() => {
+  onLoad()
 })
 
 const onRefresh = () => {
-  // 下拉刷新或切换标签时，立即重置状态
+  // 下拉刷新时，立即重置状态
   finished.value = false
   skip = 0
-  // 列表清空（可选：为了更好的视觉反馈，建议切换标签时清空旧数据）
-  list.value = []
-
-  // 如果 refreshing 是 false（说明是切换标签触发的），手动调用一次 onLoad
+  
+  // 主动触发刷新请求
   if (!refreshing.value) {
     onLoad()
   }
-}
-
-const onSearch = () => {
-  onRefresh()
 }
 
 const goToDetail = (id: number) => {
@@ -106,15 +96,14 @@ const formatCategory = (cat: string) => cat || '未知'
   <div class="pest-list-container">
     <van-nav-bar title="病虫害百科" fixed placeholder border />
 
-    <van-search v-model="searchText" placeholder="搜索病虫害名称..." shape="round" @search="onSearch" />
-
-    <van-tabs v-model:active="activeTab" sticky offset-top="0">
-      <van-tab v-for="cat in categories" :title="cat" :key="cat" />
-    </van-tabs>
-
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-      <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad" class="data-list"
-        :immediate-check="false">
+      <van-list 
+        v-model:loading="loading" 
+        :finished="finished" 
+        finished-text="没有更多了" 
+        @load="onLoad" 
+        class="data-list"
+      >
         <div v-for="item in list" :key="item.id" class="pest-card van-hairline--bottom" @click="goToDetail(item.id!)">
           
           <van-image width="100" height="80" fit="cover" radius="8"
@@ -124,7 +113,7 @@ const formatCategory = (cat: string) => cat || '未知'
             <h3 class="pest-name">{{ item.name }}</h3>
             <van-tag plain type="success" class="pest-tag">{{ formatCategory(item.category) }}</van-tag>
             <p class="pest-desc van-multi-ellipsis--l2">
-              {{ item.symptom_description }}
+              {{ item.symptom_description || '暂无描述' }}
             </p>
           </div>
           <van-icon name="arrow" color="#ccc" />
@@ -135,9 +124,9 @@ const formatCategory = (cat: string) => cat || '未知'
 </template>
 
 <style scoped>
-/* 保持原有样式不变 */
 .pest-list-container {
   background-color: #fff;
+  min-height: 100vh;
 }
 
 .data-list {
@@ -170,15 +159,5 @@ const formatCategory = (cat: string) => cat || '未知'
   font-size: 13px;
   color: #969799;
   line-height: 1.5;
-}
-
-.bottom-placeholder {
-  height: 60px;
-  /* Tabbar 的高度 */
-}
-
-/* 调整搜索栏背景色 */
-:deep(.van-search) {
-  padding: 10px 15px;
 }
 </style>
