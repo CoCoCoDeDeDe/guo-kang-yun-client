@@ -5,6 +5,9 @@ import { showToast, showSuccessToast, showFailToast } from 'vant'
 import { Service } from '../api/generated'
 import type { GovernanceRecordCreate, GovernanceRecordUpdate } from '../api/generated'
 
+// 获取真实后端地址，用于图片回显拼接
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+
 const route = useRoute()
 const router = useRouter()
 
@@ -41,12 +44,54 @@ onMounted(async () => {
   if (queryId) {
     isEdit.value = true
     recordId.value = Number(queryId)
-    // TODO: 如果有编辑回显需求，可以在这里请求详情接口
-    // 并将后端返回的照片数组映射给 fileList，例如：
-    // fileList.value = detail.photos.map(url => ({ url, isImage: true }))
+    fetching.value = true
+    
+    // 获取详情并回显数据
+    try {
+      const record = await Service.readGovernanceRecordApiV1GovernanceRecordIdGet(recordId.value)
+      if (record) {
+        formData.value.pest_type = record.pest_type
+        formData.value.location = record.location || ''
+        formData.value.description = record.description || ''
+        formData.value.status = record.status as string
+        
+        // 回显时间
+        if (record.found_time) {
+          const date = new Date(record.found_time)
+          currentDatePickerValue.value = [
+            String(date.getFullYear()),
+            String(date.getMonth() + 1).padStart(2, '0'),
+            String(date.getDate()).padStart(2, '0')
+          ]
+          formData.value.found_time = currentDatePickerValue.value.join('-')
+        }
+
+        // 回显照片列表
+        if (record.photos && record.photos.length > 0) {
+          fileList.value = record.photos.map(photo => {
+            // 拼接绝对路径用于 Vant 预览
+            const fullUrl = photo.startsWith('http') 
+              ? photo 
+              : `${API_BASE.replace(/\/$/, '')}${photo.startsWith('/') ? photo : '/' + photo}`
+            
+            return {
+              url: fullUrl,
+              isImage: true,
+              backendPath: photo // 暂存原始路径，方便提交时使用
+            }
+          })
+        }
+      }
+    } catch (e) {
+      console.error('获取记录详情失败', e)
+      showToast('获取数据失败')
+    } finally {
+      fetching.value = false
+    }
     return
   }
 
+  // 处理知识库带过来的逻辑
   const schemeId = route.query.schemeId as string
   if (schemeId) {
     fetching.value = true
@@ -72,26 +117,23 @@ const onClickLeft = () => {
   router.back()
 }
 
-// 👇 新增：处理图片上传的核心逻辑
+// 处理图片上传
 const afterRead = async (fileItem: any | any[]) => {
-  // 如果是多选，fileItem 是一个数组；单选则是一个对象。为了统一，转成数组遍历
   const items = Array.isArray(fileItem) ? fileItem : [fileItem]
 
   for (const item of items) {
-    // 1. 设置状态为上传中，Vant 会自动显示 loading 圈圈
     item.status = 'uploading'
     item.message = '上传中...'
 
     try {
-      // 2. 调用 OpenAPI 生成的单图上传接口 (强转 any 绕过 generated 代码中的类型限制)
       const res = await Service.uploadSingleImageApiV1UploadImagePost({
         file: item.file as any
       })
       
-      // 3. 上传成功，更新状态并保存真实的 URL
       item.status = 'done'
       item.message = '上传成功'
-      item.url = res.image_url // 这是后端返回的静态路径，如 "/static/uploads/xxx.jpg"
+      item.url = res.image_url // 供 Vant 使用
+      item.backendPath = res.image_url // 暂存后端返回的相对路径
     } catch (error) {
       console.error('图片上传失败:', error)
       item.status = 'failed'
@@ -102,13 +144,11 @@ const afterRead = async (fileItem: any | any[]) => {
 
 // 提交表单
 const onSubmit = async () => {
-  // 校验是否有图片正在上传中
   if (fileList.value.some(item => item.status === 'uploading')) {
     showToast('请等待图片上传完成')
     return
   }
   
-  // 校验是否有上传失败的图片
   if (fileList.value.some(item => item.status === 'failed')) {
     showToast('有图片上传失败，请移除或重试')
     return
@@ -116,21 +156,23 @@ const onSubmit = async () => {
 
   loading.value = true
   try {
-    // 👇 过滤提取出最终真实的图片 URL 列表
+    // 过滤提取最终提交的图片列表
     const photos = fileList.value
-      .filter(item => item.url)
-      .map(item => item.url)
+      .filter(item => item.backendPath || item.url)
+      .map(item => item.backendPath || item.url)
 
     let finalTime = formData.value.found_time;
 
     if (isEdit.value && recordId.value) {
+      // 修复：直接传递 photos（哪怕是空数组 [] 也要传过去，让后端清空图片）
+      // 同理，location 和 description 如果被清空，传递空字符串 '' 而不是 undefined
       const updateData: GovernanceRecordUpdate = {
         pest_type: formData.value.pest_type,
         found_time: finalTime,
-        location: formData.value.location || undefined,
-        description: formData.value.description || undefined,
+        location: formData.value.location || '',
+        description: formData.value.description || '',
         status: formData.value.status as any,
-        photos: photos.length > 0 ? photos : undefined
+        photos: photos
       }
       await Service.updateGovernanceRecordApiV1GovernanceRecordIdPut(recordId.value, updateData)
       showSuccessToast('更新成功')
@@ -139,13 +181,11 @@ const onSubmit = async () => {
       const createData: GovernanceRecordCreate = {
         pest_type: formData.value.pest_type,
         found_time: finalTime,
-        location: formData.value.location || undefined,
-        description: formData.value.description || undefined,
+        location: formData.value.location || '',
+        description: formData.value.description || '',
         status: formData.value.status as any,
-        photos: photos.length > 0 ? photos : undefined
+        photos: photos
       }
-
-      console.log('即将发送的数据 payload:', createData);
 
       await Service.createGovernanceRecordApiV1GovernancePost(createData)
       showSuccessToast('提交成功')
