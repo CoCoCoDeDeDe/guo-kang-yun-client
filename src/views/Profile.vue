@@ -1,4 +1,3 @@
-<!-- src\views\Profile.vue -->
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -94,6 +93,12 @@ const handleLogout = () => {
         icon="edit" 
         is-link 
         @click="navigateTo('/profile/edit')" 
+      />
+      <van-cell 
+        title="找回密码" 
+        icon="shield-o" 
+        is-link 
+        @click="navigateTo('/forgot-password')" 
       />
       <van-cell 
         title="我的治理记录" 
