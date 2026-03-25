@@ -5,6 +5,9 @@ import { showToast, showImagePreview } from 'vant'
 import { Service } from '../api/generated'
 import type { GovernanceRecordResponse } from '../api/generated'
 
+// 获取真实后端地址
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+
 const route = useRoute()
 const router = useRouter()
 
@@ -63,6 +66,17 @@ const formatDate = (dateStr?: string) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
+// 辅助函数：获取完整图片真实地址
+const getImageUrl = (url?: string) => {
+  if (!url) return 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'
+  if (url.startsWith('http')) return url
+  
+  const cleanBase = API_BASE.replace(/\/$/, '')
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`
+  
+  return `${cleanBase}${cleanUrl}`
+}
+
 // 辅助函数：解析状态
 const getStatusProps = (status?: string) => {
   switch (status) {
@@ -80,8 +94,11 @@ const getStatusProps = (status?: string) => {
 // 预览图片
 const previewImage = (index: number) => {
   if (recordInfo.value?.photos && recordInfo.value.photos.length > 0) {
+    // 映射出完整的真实图片地址数组，供预览组件使用
+    const realImageUrls = recordInfo.value.photos.map(url => getImageUrl(url))
+    
     showImagePreview({
-      images: recordInfo.value.photos,
+      images: realImageUrls,
       startPosition: index
     })
   }
@@ -137,7 +154,7 @@ const previewImage = (index: number) => {
               height="80"
               fit="cover"
               radius="8"
-              :src="img"
+              :src="getImageUrl(img)"
               class="grid-img"
               @click="previewImage(index)"
             />
