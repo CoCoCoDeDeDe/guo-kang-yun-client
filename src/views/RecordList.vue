@@ -4,6 +4,9 @@ import { useRouter } from 'vue-router'
 import { Service } from '../api/generated'
 import type { GovernanceRecordResponse } from '../api/generated'
 
+// 获取真实后端地址
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+
 const router = useRouter()
 
 // 列表状态
@@ -31,6 +34,8 @@ const onLoad = async () => {
     } else {
       list.value.push(...res)
     }
+
+    console.log(`[DEBUG] list:`, list.value)
 
     skip += limit
     if (res.length < limit) {
@@ -72,17 +77,28 @@ const formatDate = (dateStr?: string) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-// 辅助函数：解析状态标签颜色与文案 (根据真实的后端枚举值修改)
+// 辅助函数：获取完整图片真实地址
+const getImageUrl = (url?: string) => {
+  if (!url) return 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg' // 默认占位图
+  if (url.startsWith('http')) return url // 如果已经是绝对路径，直接返回
+  
+  // 处理斜杠，防止出现类似 http://127.0.0.1:8000//static/... 的情况
+  const cleanBase = API_BASE.replace(/\/$/, '')
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`
+  
+  return `${cleanBase}${cleanUrl}`
+}
+
+// 辅助函数：解析状态标签颜色与文案
 const getStatusProps = (status?: string) => {
   switch (status) {
-    case 'completed': // 已解决/已完成
+    case 'completed':
       return { type: 'success', text: '已解决', color: '#07c160' }
-    case 'in_progress': // 治理中/进行中
+    case 'in_progress':
       return { type: 'primary', text: '治理中', color: '#1989fa' }
-    case 'cancelled': // 已取消/待处理或其他
+    case 'cancelled':
       return { type: 'warning', text: '已取消', color: '#ff976a' }
     default:
-      // 如果还有默认的待处理状态，可以放在这里
       return { type: 'default', text: '未知状态', color: '#969799' }
   }
 }
@@ -148,7 +164,7 @@ const getStatusProps = (status?: string) => {
                 height="70"
                 radius="8"
                 fit="cover"
-                :src="(item.photos && item.photos.length > 0) ? item.photos[0] : 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'"
+                :src="getImageUrl(item.photos?.[0])"
               />
             </div>
             
@@ -165,7 +181,6 @@ const getStatusProps = (status?: string) => {
     </div>
   </div>
 </template>
-
 <style scoped>
 .record-list-container {
   background-color: #f7f8fa;
