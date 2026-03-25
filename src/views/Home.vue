@@ -16,7 +16,7 @@ const menuItems = [
   { icon: 'search', text: '病虫百科', path: '/encyclopedia', color: '#07c160' },
   { icon: 'edit', text: '治理填报', path: '/record/form', color: '#1989fa' }, // 点击治理 -> /record/form
   { icon: 'chat-o', text: '互动社区', path: '/community', color: '#ff976a' },
-  { icon: 'warn-o', text: '预警详情', path: '/message/detail', color: '#ee0a24' } // 快捷方式前往预警详情
+  { icon: 'warn-o', text: '预警列表', path: '/message/list', color: '#ee0a24' } // 快捷方式前往预警详情
 ]
 
 // 获取首页数据
@@ -26,7 +26,7 @@ const fetchHomeData = async () => {
     // 并发请求：获取当前生效的预警和最新的科普文章
     const [warningRes, articleRes] = await Promise.all([
       Service.readActiveWarningsApiV1WarningActiveGet(0, 5),
-      Service.readArticlesApiV1CommunityArticlesGet(0, 5) // 获取5篇热门文章
+      Service.readArticlesApiV1CommunityArticlesGet(0, 10)
     ])
     warnings.value = warningRes
     articles.value = articleRes
