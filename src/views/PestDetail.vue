@@ -5,12 +5,18 @@ import { Service } from '../api/generated'
 import type { PestInfoResponse } from '../api/generated'
 import { showToast } from 'vant'
 
+// 获取真实后端地址
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+
 const route = useRoute()
 const router = useRouter()
 
 const pestId = Number(route.params.id)
 const pestInfo = ref<PestInfoResponse | null>(null)
 const loading = ref(true)
+
+// 默认占位图
+const defaultThumb = 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'
 
 // 获取病虫害详情
 const fetchPestDetail = async () => {
@@ -53,6 +59,17 @@ const applyScheme = () => {
 
 // 格式化分类标签
 const formatCategory = (cat?: string) => cat || '未知分类'
+
+// 辅助函数：获取完整图片真实地址
+const getImageUrl = (url?: string | null) => {
+  if (!url) return defaultThumb
+  if (url.startsWith('http')) return url
+  
+  const cleanBase = API_BASE.replace(/\/$/, '')
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`
+  
+  return `${cleanBase}${cleanUrl}`
+}
 </script>
 
 <template>
@@ -72,7 +89,7 @@ const formatCategory = (cat?: string) => cat || '未知分类'
           width="100%"
           height="220"
           fit="cover"
-          :src="pestInfo.typical_image || 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'"
+          :src="getImageUrl(pestInfo.typical_image)"
         />
 
         <div class="info-card section">
@@ -116,6 +133,7 @@ const formatCategory = (cat?: string) => cat || '未知分类'
 </template>
 
 <style scoped>
+/* 保持原有样式不变 */
 .pest-detail-container {
   background-color: #f7f8fa;
   /* 留出底部 ActionBar 的空间，防止内容被遮挡 */
