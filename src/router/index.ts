@@ -63,7 +63,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/record/detail/:id',
-    name: 'RecordForm',
+    name: 'RecordDetail',
     component: () => import('../views/RecordDetail.vue'),
     meta: { requiresAuth: true }
   },

@@ -6,6 +6,8 @@ import type { ArticleCreate } from '../models/ArticleCreate';
 import type { ArticleResponse } from '../models/ArticleResponse';
 import type { AuditAction } from '../models/AuditAction';
 import type { Body_login_for_access_token_api_v1_users_login_post } from '../models/Body_login_for_access_token_api_v1_users_login_post';
+import type { Body_upload_multiple_images_api_v1_upload_images_post } from '../models/Body_upload_multiple_images_api_v1_upload_images_post';
+import type { Body_upload_single_image_api_v1_upload_image_post } from '../models/Body_upload_single_image_api_v1_upload_image_post';
 import type { GovernanceRecordCreate } from '../models/GovernanceRecordCreate';
 import type { GovernanceRecordResponse } from '../models/GovernanceRecordResponse';
 import type { GovernanceRecordUpdate } from '../models/GovernanceRecordUpdate';
@@ -20,6 +22,7 @@ import type { SendCodeRequest } from '../models/SendCodeRequest';
 import type { Token } from '../models/Token';
 import type { UserChangePassword } from '../models/UserChangePassword';
 import type { UserCreate } from '../models/UserCreate';
+import type { UserProfileUpdate } from '../models/UserProfileUpdate';
 import type { UserResponse } from '../models/UserResponse';
 import type { WarningMessageCreate } from '../models/WarningMessageCreate';
 import type { WarningMessageResponse } from '../models/WarningMessageResponse';
@@ -147,6 +150,27 @@ export class Service {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/users/me',
+        });
+    }
+    /**
+     * 修改当前登录用户的基本资料
+     * 修改基本资料，如昵称 (username)、手机号 (phone) 等。
+     * 注意：修改密码请走专属的 /change-password 接口。
+     * @param requestBody
+     * @returns UserResponse Successful Response
+     * @throws ApiError
+     */
+    public static updateUsersMeApiV1UsersMePut(
+        requestBody: UserProfileUpdate,
+    ): CancelablePromise<UserResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/users/me',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
     /**
@@ -369,6 +393,27 @@ export class Service {
         });
     }
     /**
+     * 获取治理记录详情
+     * 获取某条具体的治理记录详情
+     * @param recordId
+     * @returns GovernanceRecordResponse Successful Response
+     * @throws ApiError
+     */
+    public static readGovernanceRecordApiV1GovernanceRecordIdGet(
+        recordId: number,
+    ): CancelablePromise<GovernanceRecordResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/governance/{record_id}',
+            path: {
+                'record_id': recordId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
      * 更新治理状态
      * 修改自己记录的信息，例如将状态从“进行中”修改为“已解决”
      * @param recordId
@@ -415,6 +460,26 @@ export class Service {
         });
     }
     /**
+     * 获取单篇文章详情
+     * @param articleId
+     * @returns ArticleResponse Successful Response
+     * @throws ApiError
+     */
+    public static readArticleApiV1CommunityArticlesArticleIdGet(
+        articleId: number,
+    ): CancelablePromise<ArticleResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/community/articles/{article_id}',
+            path: {
+                'article_id': articleId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
      * 发布科普文章
      * @param requestBody
      * @returns ArticleResponse Successful Response
@@ -451,6 +516,26 @@ export class Service {
             query: {
                 'skip': skip,
                 'limit': limit,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 获取单条帖子详情
+     * @param postId
+     * @returns PostResponse Successful Response
+     * @throws ApiError
+     */
+    public static readPostApiV1CommunityPostsPostIdGet(
+        postId: number,
+    ): CancelablePromise<PostResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/community/posts/{post_id}',
+            path: {
+                'post_id': postId,
             },
             errors: {
                 422: `Validation Error`,
@@ -591,6 +676,27 @@ export class Service {
         });
     }
     /**
+     * 获取单条预警详情
+     * 所有登录用户均可通过 ID 查看预警的具体内容
+     * @param warningId
+     * @returns WarningMessageResponse Successful Response
+     * @throws ApiError
+     */
+    public static readWarningApiV1WarningWarningIdGet(
+        warningId: number,
+    ): CancelablePromise<WarningMessageResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/warning/{warning_id}',
+            path: {
+                'warning_id': warningId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
      * 删除预警信息
      * 【限专家/管理员】删除某条预警
      * @param warningId
@@ -606,6 +712,48 @@ export class Service {
             path: {
                 'warning_id': warningId,
             },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 通用单图上传
+     * 适用于知识库封面、用户头像、富文本单张插图等场景。
+     * 返回示例: {"image_url": "/static/uploads/xxxxx.jpg"}
+     * @param formData
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static uploadSingleImageApiV1UploadImagePost(
+        formData: Body_upload_single_image_api_v1_upload_image_post,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/upload/image',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 通用多图上传
+     * 适用于治理记录等多图场景。
+     * 返回示例: {"image_urls": ["/static/uploads/1.jpg", "/static/uploads/2.jpg"]}
+     * @param formData
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static uploadMultipleImagesApiV1UploadImagesPost(
+        formData: Body_upload_multiple_images_api_v1_upload_images_post,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/upload/images',
+            formData: formData,
+            mediaType: 'multipart/form-data',
             errors: {
                 422: `Validation Error`,
             },

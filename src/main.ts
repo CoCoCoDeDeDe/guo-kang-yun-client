@@ -21,6 +21,9 @@ import {
 // 1. 配置后端的真实接口地址
 OpenAPI.BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
+console.log(`[DEBUG] env base url:`, import.meta.env.VITE_API_BASE_URL);
+console.log(`[DEBUG] OpenAPI.BASE:`, OpenAPI.BASE);
+
 // 2. 【优化】将 TOKEN 配置为一个函数，这样每次请求前都会实时去 localStorage 获取最新值
 OpenAPI.TOKEN = async () => {
   return localStorage.getItem('token') || ''
