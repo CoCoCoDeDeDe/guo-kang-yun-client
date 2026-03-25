@@ -6,28 +6,25 @@ import type { WarningMessageResponse, ArticleResponse } from '../api/generated'
 
 const router = useRouter()
 
-// 状态变量
 const warnings = ref<WarningMessageResponse[]>([])
 const articles = ref<ArticleResponse[]>([])
 const loading = ref(false)
 
-// 快捷入口配置（扩展为 8 个，自动生成两行四列）
+// 菜单配置：增加背景色以美化图标
 const menuItems = [
-  { icon: 'apps-o', text: '病虫百科', path: '/encyclopedia', color: '#07c160' },
-  { icon: 'edit', text: '治理填报', path: '/record/form', color: '#1989fa' },
-  { icon: 'orders-o', text: '我的记录', path: '/record/list', color: '#7232dd' },
-  { icon: 'warn-o', text: '预警列表', path: '/message/list', color: '#ee0a24' },
-  { icon: 'friends-o', text: '互动社区', path: '/community', color: '#ff976a' },
-  { icon: 'add-square', text: '发帖求助', path: '/post/create', color: '#00b96b' },
-  { icon: 'setting-o', text: '编辑资料', path: '/profile/edit', color: '#39a9ed' },
-  { icon: 'contact', text: '个人中心', path: '/profile', color: '#969799' }
+  { icon: 'apps-o', text: '病虫百科', path: '/encyclopedia', color: '#07c160', bgColor: '#e8f7ed' },
+  { icon: 'edit', text: '治理填报', path: '/record/form', color: '#1989fa', bgColor: '#e8f2ff' },
+  { icon: 'orders-o', text: '我的记录', path: '/record/list', color: '#7232dd', bgColor: '#f1ecf9' },
+  { icon: 'warn-o', text: '预警列表', path: '/message/list', color: '#ee0a24', bgColor: '#ffeaeb' },
+  { icon: 'friends-o', text: '互动社区', path: '/community', color: '#ff976a', bgColor: '#fff4eb' },
+  { icon: 'add-square', text: '发帖求助', path: '/post/create', color: '#00b96b', bgColor: '#e6f8f0' },
+  { icon: 'setting-o', text: '编辑资料', path: '/profile/edit', color: '#39a9ed', bgColor: '#ebf6fd' },
+  { icon: 'contact', text: '个人中心', path: '/profile', color: '#969799', bgColor: '#f5f5f5' }
 ]
 
-// 获取首页数据
 const fetchHomeData = async () => {
   loading.value = true
   try {
-    // 并发请求：获取当前生效的预警和最新的科普文章
     const [warningRes, articleRes] = await Promise.all([
       Service.readActiveWarningsApiV1WarningActiveGet(0, 5),
       Service.readArticlesApiV1CommunityArticlesGet(0, 10)
@@ -41,88 +38,74 @@ const fetchHomeData = async () => {
   }
 }
 
-onMounted(() => {
-  fetchHomeData()
-})
+onMounted(() => fetchHomeData())
 
-// 路由跳转辅助函数
-const navigateTo = (path: string) => {
-  router.push(path)
-}
-
-// 预警点击跳转 -> /message/detail (可带上具体预警的 id)
-const goToWarningDetail = (id?: number) => {
-  if (id) {
-    router.push(`/message/detail/${id}`) 
-  } else {
-    router.push('/message/detail')
-  }
-}
-
-// 文章点击跳转 -> /article/detail
-const goToArticleDetail = (id: number) => {
-  router.push(`/article/detail/${id}`)
-}
+const navigateTo = (path: string) => router.push(path)
+const goToWarningDetail = (id?: number) => router.push(id ? `/message/detail/${id}` : '/message/list')
+const goToArticleDetail = (id: number) => router.push(`/article/detail/${id}`)
 </script>
 
 <template>
   <div class="home-container">
-    <van-nav-bar title="果康云" fixed placeholder border />
+    <van-nav-bar title="果康云" fixed placeholder border safe-area-inset-top />
 
-    <van-notice-bar v-if="warnings.length > 0" left-icon="volume-o" :scrollable="false">
-      <van-swipe
-        vertical
-        class="notice-swipe"
-        :autoplay="3000"
-        :touchable="false"
-        :show-indicators="false"
-      >
-        <van-swipe-item 
-          v-for="warning in warnings" 
-          :key="warning.id"
-          @click="goToWarningDetail(warning.id)"
-        >
-          【{{ warning.level }}预警】{{ warning.affected_scope }} - 点击查看详情
-        </van-swipe-item>
-      </van-swipe>
-    </van-notice-bar>
+    <div class="notice-wrapper" v-if="warnings.length > 0">
+      <van-notice-bar :scrollable="false" class="custom-notice-bar">
+        <template #left-icon>
+          <van-icon name="warning" color="#ee0a24" size="18" style="margin-right: 8px" />
+        </template>
+        <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
+          <van-swipe-item v-for="warning in warnings" :key="warning.id" @click="goToWarningDetail(warning.id)">
+            <span class="warning-tag" :class="warning.level">[{{ warning.level }}]</span>
+            {{ warning.affected_scope }}
+          </van-swipe-item>
+        </van-swipe>
+      </van-notice-bar>
+    </div>
 
-    <van-grid :column-num="4" :border="false" class="menu-grid">
-      <van-grid-item
-        v-for="item in menuItems"
-        :key="item.text"
-        :icon="item.icon"
-        :text="item.text"
-        :icon-color="item.color"
-        @click="navigateTo(item.path)"
-      />
-    </van-grid>
+    <div class="menu-card">
+      <van-grid :column-num="4" :border="false">
+        <van-grid-item v-for="item in menuItems" :key="item.text" @click="navigateTo(item.path)">
+          <template #icon>
+            <div class="icon-box" :style="{ backgroundColor: item.bgColor }">
+              <van-icon :name="item.icon" :color="item.color" size="24" />
+            </div>
+          </template>
+          <template #text>
+            <span class="menu-text">{{ item.text }}</span>
+          </template>
+        </van-grid-item>
+      </van-grid>
+    </div>
 
     <div class="section-container">
       <div class="section-header">
-        <span class="title">热门科普</span>
-        <span class="more" @click="navigateTo('/community')">更多文章 <van-icon name="arrow" /></span>
+        <h3 class="title">热门科普</h3>
+        <div class="more" @click="navigateTo('/community')">
+          全部文章 <van-icon name="arrow" />
+        </div>
       </div>
 
-      <van-skeleton title avatar :row="3" :loading="loading">
+      <van-skeleton title :row="5" :loading="loading" class="custom-skeleton">
         <div class="article-list">
-          <van-card
-            v-for="article in articles"
+          <div 
+            class="text-article-card" 
+            v-for="article in articles" 
             :key="article.id"
-            :desc="article.content"
-            :title="article.title"
-            thumb="https://fastly.jsdelivr.net/npm/@vant/assets/ipad.jpeg"
             @click="goToArticleDetail(article.id!)"
           >
-            <template #tags>
-              <van-tag plain type="primary" size="medium">推荐</van-tag>
-            </template>
-            <template #bottom>
-              <div class="article-date">
-                发布于 {{ new Date(article.create_at!).toLocaleDateString() }}
-              </div>
-            </template>
-          </van-card>
+            <div class="card-header">
+              <van-tag type="primary" plain round class="cat-tag">{{ article.category }}</van-tag>
+              <span class="view-count"><van-icon name="eye-o" /> {{ article.views || 0 }}</span>
+            </div>
+            <h4 class="article-title van-ellipsis">{{ article.title }}</h4>
+            <p class="article-desc van-multi-ellipsis--l2">{{ article.content }}</p>
+            <div class="card-footer">
+              <span>果康云官方</span>
+              <span class="dot">·</span>
+              <span>{{ new Date(article.create_at!).toLocaleDateString() }}</span>
+            </div>
+          </div>
           
           <van-empty v-if="!loading && articles.length === 0" description="暂无热门文章" />
         </div>
@@ -133,99 +116,128 @@ const goToArticleDetail = (id: number) => {
 
 <style scoped>
 .home-container {
-  /* 去掉 min-height: 100vh 避免底部被撑破 */
   background-color: #f7f8fa;
-  padding-bottom: 20px; /* 给最底部留点边距，Tabbar 的高度由 MainLayout 负责 */
+  min-height: 100vh;
+  padding-bottom: 30px;
 }
 
-/* 预警垂直轮播样式 */
+/* 预警样式 */
+.notice-wrapper {
+  padding: 12px 16px 0;
+}
+.custom-notice-bar {
+  border-radius: 20px;
+  height: 40px;
+  background-color: #fff;
+  color: #323233;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
 .notice-swipe {
   height: 40px;
   line-height: 40px;
+  font-size: 13px;
 }
-
-/* 顶部 Banner 样式 */
-.banner-swipe {
-  height: 160px;
-  margin: 10px 15px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+.warning-tag {
+  font-weight: bold;
+  margin-right: 4px;
 }
+.warning-tag.高 { color: #ee0a24; }
+.warning-tag.中 { color: #ff976a; }
 
-.banner-swipe img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.banner-title {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 8px 12px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
-  color: #fff;
-  font-size: 14px;
-}
-
-/* 快捷菜单区 */
-.menu-grid {
-  margin: 0 15px;
+/* 菜单金刚区 */
+.menu-card {
+  margin: 16px;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  margin-top: 14px;
+  border-radius: 16px;
+  padding: 8px 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.menu-text {
+  font-size: 12px;
+  color: #323233;
+  font-weight: 500;
 }
 
-/* 热门文章区 */
+/* 列表部分 */
 .section-container {
-  margin-top: 15px;
+  margin-top: 20px;
 }
-
 .section-header {
-  padding: 0 15px 10px;
+  padding: 0 20px 12px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
 }
-
 .section-header .title {
-  font-size: 16px;
-  font-weight: bold;
-  color: #323233;
+  font-size: 18px;
+  margin: 0;
+  color: #1a1a1a;
 }
-
 .section-header .more {
   font-size: 13px;
-  color: #969799;
-  display: flex;
-  align-items: center;
+  color: #1989fa;
 }
 
 .article-list {
-  padding: 0 15px;
+  padding: 0 16px;
 }
 
-/* 覆盖 Card 样式使其更美观 */
-.article-list :deep(.van-card) {
+/* 纯文字卡片设计 */
+.text-article-card {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
+  padding: 16px;
   margin-bottom: 12px;
-  padding: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: background 0.2s;
 }
-
-.article-list :deep(.van-card__title) {
-  font-size: 15px;
-  font-weight: bold;
-  margin-bottom: 5px;
+.text-article-card:active {
+  background: #f2f3f5;
 }
-
-.article-date {
-  margin-top: 5px;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cat-tag {
+  font-weight: 500;
+}
+.view-count {
+  font-size: 12px;
+  color: #969799;
+}
+.article-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #323233;
+  line-height: 1.4;
+}
+.article-desc {
+  font-size: 13px;
+  color: #646566;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.card-footer {
   font-size: 12px;
   color: #c8c9cc;
+  display: flex;
+  align-items: center;
+}
+.card-footer .dot {
+  margin: 0 6px;
+}
+
+.custom-skeleton {
+  padding: 20px;
 }
 </style>
