@@ -35,8 +35,6 @@ const onLoad = async () => {
       list.value.push(...res)
     }
 
-    console.log(`[DEBUG] list:`, list.value)
-
     skip += limit
     if (res.length < limit) {
       finished.value = true

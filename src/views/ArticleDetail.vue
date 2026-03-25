@@ -12,24 +12,24 @@ const articleId = Number(route.params.id)
 const articleInfo = ref<ArticleResponse | null>(null)
 const loading = ref(true)
 
-// 获取文章详情
+// 获取文章详情 (已替换为新的单条获取接口)
 const fetchArticleDetail = async () => {
   loading.value = true
   try {
-    // 【注意】当前 API 没有获取单篇文章的接口，这里拉取前 100 条并在前端进行匹配
-    // 如果后端添加了接口，请替换为直接获取详情的方法
-    const res = await Service.readArticlesApiV1CommunityArticlesGet(0, 100)
-    const foundArticle = res.find(item => item.id === articleId)
-
-    if (foundArticle) {
-      articleInfo.value = foundArticle
+    // 调用直接获取单篇文章的接口
+    const res = await Service.readArticleApiV1CommunityArticlesArticleIdGet(articleId)
+    
+    if (res) {
+      articleInfo.value = res
     } else {
       showToast('文章不存在或已被删除')
       router.back()
     }
   } catch (error) {
     console.error('获取文章详情失败', error)
-    showToast('获取文章详情失败，请检查网络')
+    // 后端返回 404/422 等错误时会进入这里
+    showToast('获取文章详情失败或文章不存在')
+    router.back()
   } finally {
     loading.value = false
   }
@@ -44,7 +44,7 @@ onMounted(() => {
   }
 })
 
-// 路由返回（自动返回首页或社区）
+// 路由返回（自动返回上一页）
 const onClickLeft = () => {
   router.back()
 }
@@ -103,13 +103,6 @@ const handleCollect = () => {
 
         <div class="article-content">
           <p>{{ articleInfo.content }}</p>
-          
-          <van-image
-            class="article-img"
-            width="100%"
-            radius="8"
-            src="https://fastly.jsdelivr.net/npm/@vant/assets/apple-2.jpeg"
-          />
         </div>
 
         <van-divider>完</van-divider>
@@ -128,6 +121,7 @@ const handleCollect = () => {
 </template>
 
 <style scoped>
+/* 样式保持不变 */
 .article-detail-container {
   background-color: #fff;
   min-height: 100vh;
