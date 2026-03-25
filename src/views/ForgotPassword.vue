@@ -110,7 +110,7 @@ const onSubmit = async () => {
 
 <template>
   <div class="forgot-password-container">
-    <van-nav-bar title="找回密码" left-text="返回" left-arrow fixed placeholder border @click-left="onClickLeft" />
+    <van-nav-bar title="找回密码" left-text="返回" left-arrow fixed placeholder border safe-area-inset-top @click-left="onClickLeft" />
 
     <div class="header">
       <h2 class="title">重置您的密码</h2>

@@ -80,7 +80,7 @@ const getImageUrl = (url?: string | null) => {
       left-arrow 
       fixed 
       placeholder 
-      @click-left="onClickLeft" 
+      safe-area-inset-top @click-left="onClickLeft" 
     />
 
     <van-skeleton title :row="10" :loading="loading" class="skeleton-wrap">

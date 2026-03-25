@@ -119,7 +119,7 @@ const onSubmit = async () => {
       fixed 
       placeholder 
       border
-      @click-left="onClickLeft" 
+      safe-area-inset-top @click-left="onClickLeft" 
     />
 
     <div class="header">

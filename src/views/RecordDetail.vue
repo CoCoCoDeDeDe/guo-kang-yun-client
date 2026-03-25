@@ -107,7 +107,7 @@ const previewImage = (index: number) => {
 
 <template>
   <div class="record-detail-container">
-    <van-nav-bar title="治理记录详情" left-text="返回" left-arrow fixed placeholder @click-left="onClickLeft" />
+    <van-nav-bar title="治理记录详情" left-text="返回" left-arrow fixed placeholder safe-area-inset-top @click-left="onClickLeft" />
 
     <van-skeleton title :row="10" :loading="loading" class="skeleton-wrap">
       <div v-if="recordInfo" class="detail-content">

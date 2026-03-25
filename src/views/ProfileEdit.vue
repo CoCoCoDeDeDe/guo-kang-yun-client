@@ -107,7 +107,7 @@ const onClickLeft = () => {
       fixed 
       placeholder 
       border
-      @click-left="onClickLeft" 
+      safe-area-inset-top @click-left="onClickLeft" 
     />
 
     <van-tabs v-model:active="activeTab" sticky offset-top="46px" color="#07c160">

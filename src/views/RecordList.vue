@@ -110,7 +110,7 @@ const getStatusProps = (status?: string) => {
       left-arrow 
       fixed 
       placeholder 
-      @click-left="onClickLeft"
+      safe-area-inset-top @click-left="onClickLeft"
     >
       <template #right>
         <van-icon name="plus" size="18" @click="goToForm" />

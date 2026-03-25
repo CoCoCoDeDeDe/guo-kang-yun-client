@@ -6,7 +6,7 @@
       left-arrow
       fixed
       placeholder
-      @click-left="onClickLeft"
+      safe-area-inset-top @click-left="onClickLeft"
     />
 
     <van-skeleton title :row="8" :loading="isFetching" class="skeleton-wrapper">

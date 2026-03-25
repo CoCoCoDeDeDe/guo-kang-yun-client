@@ -29,6 +29,23 @@ body::before {
   margin-top: env(safe-area-inset-top); /* 把内容压下来 */
 }
 
+/* 1. 给所有的固定定位导航栏增加顶部安全区距离 */
+.van-nav-bar--fixed {
+  padding-top: env(safe-area-inset-top);
+  background-color: #fff; /* 确保背景色填满状态栏区域 */
+}
+
+/* 2. 这里的目的是防止页面主体内容被加高后的导航栏遮挡 */
+/* Vant NavBar fixed 模式下通常会有一个 placeholder，如果没有，手动给容器加 margin */
+.van-nav-bar__placeholder {
+  height: calc(46px + env(safe-area-inset-top)) !important;
+}
+
+/* 3. 如果你没有使用 placeholder，可以直接针对页面容器 */
+.record-form-container, .main-layout-container {
+  padding-top: env(safe-area-inset-top);
+}
+
 a {
   font-weight: 500;
   color: #646cff;

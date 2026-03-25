@@ -59,7 +59,7 @@ const onSubmit = async () => {
 
 <template>
   <div class="article-publish-container">
-    <van-nav-bar title="发布科普文章" left-text="取消" left-arrow fixed placeholder @click-left="onClickLeft" />
+    <van-nav-bar title="发布科普文章" left-text="取消" left-arrow fixed placeholder safe-area-inset-top @click-left="onClickLeft" />
 
     <van-form @submit="onSubmit" class="form-wrap">
 

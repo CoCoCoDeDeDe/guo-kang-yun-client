@@ -86,7 +86,7 @@ const getLevelProps = (level?: string) => {
       fixed 
       placeholder 
       border
-      @click-left="onClickLeft" 
+      safe-area-inset-top @click-left="onClickLeft" 
     />
 
     <van-skeleton title avatar :row="10" :loading="loading" class="skeleton-wrap">

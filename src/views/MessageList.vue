@@ -102,7 +102,7 @@ const getLevelProps = (level?: string) => {
       left-arrow 
       fixed 
       placeholder 
-      @click-left="onClickLeft" 
+      safe-area-inset-top @click-left="onClickLeft" 
     />
 
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh" class="pull-refresh-wrap">

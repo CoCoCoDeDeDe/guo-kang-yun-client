@@ -1,6 +1,6 @@
 <template>
   <div class="pest-post-page">
-    <van-nav-bar title="新增病虫害" left-text="返回" left-arrow fixed placeholder @click-left="onClickLeft" />
+    <van-nav-bar title="新增病虫害" left-text="返回" left-arrow fixed placeholder safe-area-inset-top @click-left="onClickLeft" />
 
     <van-form @submit="onSubmit">
       <van-cell-group inset class="form-group">

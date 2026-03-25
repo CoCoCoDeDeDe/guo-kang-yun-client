@@ -98,7 +98,7 @@ const executePublish = async () => {
 
 <template>
   <div class="warning-publish-container">
-    <van-nav-bar title="发布灾情预警" left-text="返回" left-arrow fixed placeholder border @click-left="onClickLeft" />
+    <van-nav-bar title="发布灾情预警" left-text="返回" left-arrow fixed placeholder border safe-area-inset-top @click-left="onClickLeft" />
 
     <div class="admin-alert">
       <van-icon name="warning-o" size="20" />

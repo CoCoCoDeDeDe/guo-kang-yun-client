@@ -212,7 +212,7 @@ const onOversize = () => {
 <template>
   <div class="record-form-container">
     <van-nav-bar :title="isEdit ? '编辑治理记录' : '新增治理记录'" left-text="取消" left-arrow fixed placeholder border
-      @click-left="onClickLeft" />
+      safe-area-inset-top @click-left="onClickLeft" />
 
     <van-skeleton title :row="5" :loading="fetching" class="skeleton-wrap">
       <van-form @submit="onSubmit" class="form-body">

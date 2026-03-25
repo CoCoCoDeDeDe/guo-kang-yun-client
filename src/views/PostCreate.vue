@@ -80,7 +80,7 @@ const onSubmit = async () => {
       left-arrow 
       fixed 
       placeholder 
-      @click-left="onClickLeft" 
+      safe-area-inset-top @click-left="onClickLeft" 
     />
 
     <van-form @submit="onSubmit" class="form-wrap">
