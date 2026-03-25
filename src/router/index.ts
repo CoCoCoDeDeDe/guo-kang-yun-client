@@ -2,14 +2,20 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import MainLayout from '../layout/MainLayout.vue'
 
 const routes: RouteRecordRaw[] = [
-  // 1. 登录页（不需要底部导航栏）
+  // 登录页（不需要底部导航栏）
   {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue')
   },
-  
-  // 2. 主页面结构（带底部导航栏）
+  // 注册页（不需要底部导航栏）
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/Register.vue')
+  },
+
+  // 主页面结构（带底部导航栏）
   {
     path: '/',
     component: MainLayout,
