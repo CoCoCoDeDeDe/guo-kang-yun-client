@@ -21,7 +21,7 @@
           <van-card
             :title="item.name"
             :desc="item.symptom_description || '暂无描述'"
-            :thumb="item.typical_image || defaultThumb"
+            :thumb="getImageUrl(item.typical_image)"
             @click="onClickItem(item.id)"
           >
             <template #tags>
@@ -72,6 +72,9 @@ import { showConfirmDialog, showToast } from 'vant';
 import { Service } from '../api/generated';
 import type { PestInfoResponse } from '../api/generated';
 
+// 获取真实后端地址
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
 const router = useRouter();
 
 // 列表数据状态
@@ -86,6 +89,17 @@ const defaultThumb = 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg';
 // 返回上一页
 const onClickLeft = () => {
   router.push('/profile');
+};
+
+// 新增：辅助函数 获取完整图片真实地址
+const getImageUrl = (url?: string | null) => {
+  if (!url) return defaultThumb; // 如果为空，返回默认占位图
+  if (url.startsWith('http')) return url; // 已经是绝对路径直接返回
+  
+  const cleanBase = API_BASE.replace(/\/$/, '');
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+  
+  return `${cleanBase}${cleanUrl}`;
 };
 
 // 获取列表数据
