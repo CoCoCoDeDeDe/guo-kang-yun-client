@@ -7,6 +7,7 @@ const config: CapacitorConfig = {
   server: {
     // url: 'http://10.27.89.34:5173/home',
     cleartext: true,
+    androidScheme: 'http'
   }
 };
 

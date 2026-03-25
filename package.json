@@ -8,6 +8,7 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "dev:cap": "npx cap sync",
+    "build:sync": "npx cap sync android",
     "build:cap": "npx cap open android",
     "generate-api": "npx openapi-typescript-codegen --input ./openapi.json --output ./src/api/generated --client axios"
   },
