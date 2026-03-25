@@ -32,27 +32,24 @@ onMounted(() => {
   fetchUserInfo()
 })
 
-// 提交基本资料修改
+// 提交基本资料修改 (已接入新接口)
 const onSubmitProfile = async () => {
   loading.value = true
   try {
-    // 【注意】目前 Service.ts 中没有更新用户信息的 API (例如 updateMe)
-    // 假设后端补充了接口，代码如下：
-    // await Service.updateUserMeApiV1UsersMePut({ username: profileForm.value.username })
+    // 调用更新资料 API
+    await Service.updateUsersMeApiV1UsersMePut({
+      username: profileForm.value.username
+    })
     
-    // 模拟成功
-    setTimeout(() => {
-      showSuccessToast('资料保存成功')
-      router.replace('/profile')
-    }, 500)
+    showSuccessToast('资料保存成功')
+    router.replace('/profile')
   } catch (error) {
     console.error('更新资料失败', error)
-    showFailToast('保存失败')
+    showFailToast('保存失败，请检查网络或稍后重试')
   } finally {
     loading.value = false
   }
 }
-
 
 // =============== 2. 修改密码状态 ===============
 const passwordForm = ref({
@@ -196,26 +193,10 @@ const onClickLeft = () => {
 </template>
 
 <style scoped>
-.profile-edit-container {
-  background-color: #f7f8fa;
-  min-height: 100vh;
-}
-
-.form-wrapper {
-  padding-top: 16px;
-}
-
-.form-group {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-}
-
-.submit-btn-wrap {
-  margin: 32px 16px 16px 16px;
-}
-
-/* 覆盖禁用状态输入框的文字颜色，使其更容易看清 */
-:deep(.van-field__control:disabled) {
-  color: #969799;
-  -webkit-text-fill-color: #969799;
-}
+/* 样式部分保持不变 */
+.profile-edit-container { background-color: #f7f8fa; min-height: 100vh; }
+.form-wrapper { padding-top: 16px; }
+.form-group { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); }
+.submit-btn-wrap { margin: 32px 16px 16px 16px; }
+:deep(.van-field__control:disabled) { color: #969799; -webkit-text-fill-color: #969799; }
 </style>
