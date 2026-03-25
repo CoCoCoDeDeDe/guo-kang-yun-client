@@ -148,7 +148,6 @@ const handleLogout = () => {
 <style scoped>
 .profile-container {
   background-color: #f7f8fa;
-  min-height: 100%;
   padding-bottom: 20px;
 }
 
