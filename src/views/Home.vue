@@ -11,12 +11,16 @@ const warnings = ref<WarningMessageResponse[]>([])
 const articles = ref<ArticleResponse[]>([])
 const loading = ref(false)
 
-// 快捷入口配置（按要求绑定路由）
+// 快捷入口配置（扩展为 8 个，自动生成两行四列）
 const menuItems = [
-  { icon: 'search', text: '病虫百科', path: '/encyclopedia', color: '#07c160' },
-  { icon: 'edit', text: '治理填报', path: '/record/form', color: '#1989fa' }, // 点击治理 -> /record/form
-  { icon: 'chat-o', text: '互动社区', path: '/community', color: '#ff976a' },
-  { icon: 'warn-o', text: '预警列表', path: '/message/list', color: '#ee0a24' } // 快捷方式前往预警详情
+  { icon: 'apps-o', text: '病虫百科', path: '/encyclopedia', color: '#07c160' },
+  { icon: 'edit', text: '治理填报', path: '/record/form', color: '#1989fa' },
+  { icon: 'orders-o', text: '我的记录', path: '/record/list', color: '#7232dd' },
+  { icon: 'warn-o', text: '预警列表', path: '/message/list', color: '#ee0a24' },
+  { icon: 'friends-o', text: '互动社区', path: '/community', color: '#ff976a' },
+  { icon: 'add-square', text: '发帖求助', path: '/post/create', color: '#00b96b' },
+  { icon: 'setting-o', text: '编辑资料', path: '/profile/edit', color: '#39a9ed' },
+  { icon: 'contact', text: '个人中心', path: '/profile', color: '#969799' }
 ]
 
 // 获取首页数据
