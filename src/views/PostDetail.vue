@@ -5,6 +5,9 @@ import { showToast, showImagePreview } from 'vant'
 import { Service } from '../api/generated'
 import type { PostResponse } from '../api/generated'
 
+// 获取真实后端地址
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+
 const route = useRoute()
 const router = useRouter()
 
@@ -12,23 +15,24 @@ const postId = Number(route.params.id)
 const postInfo = ref<PostResponse | null>(null)
 const loading = ref(true)
 
-// 获取帖子详情
+// 获取帖子详情 (已使用新接口)
 const fetchPostDetail = async () => {
   loading.value = true
   try {
-    // 【注意】当前 API 没有获取单条帖子的接口，这里拉取近期列表并在前端匹配
-    const res = await Service.readPostsApiV1CommunityPostsGet(0, 100)
-    const foundPost = res.find(item => item.id === postId)
+    // 调用直接获取单条帖子的接口
+    const res = await Service.readPostApiV1CommunityPostsPostIdGet(postId)
 
-    if (foundPost) {
-      postInfo.value = foundPost
+    if (res) {
+      postInfo.value = res
     } else {
       showToast('帖子不存在或已被删除')
       router.replace('/community')
     }
   } catch (error) {
     console.error('获取帖子详情失败', error)
-    showToast('获取数据失败，请检查网络')
+    // 后端如果抛出 404 等错误，会进入 catch 分支
+    showToast('获取数据失败或帖子不存在')
+    router.replace('/community')
   } finally {
     loading.value = false
   }
@@ -54,14 +58,27 @@ const formatDate = (dateStr?: string) => {
   return new Date(dateStr).toLocaleString()
 }
 
-// 预览帖子图片 (如果后端 PostResponse 中包含 photos/images 字段)
+// 辅助函数：获取完整图片真实地址
+const getImageUrl = (url?: string) => {
+  if (!url) return 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'
+  if (url.startsWith('http')) return url
+  
+  const cleanBase = API_BASE.replace(/\/$/, '')
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`
+  
+  return `${cleanBase}${cleanUrl}`
+}
+
+// 预览帖子图片
 const previewImage = (index: number) => {
-  // 注意：如果实际生成的 PostResponse 中没有 photos 字段，请联系后端加上，
-  // 因为求助帖通常需要发病害照片
+  // 注意：如果实际生成的 PostResponse 中没有 photos 字段，请联系后端加上
   const images = (postInfo.value as any)?.photos || []
   if (images.length > 0) {
+    // 映射出完整的真实图片地址数组，供预览组件使用
+    const realImageUrls = images.map((url: string) => getImageUrl(url))
+    
     showImagePreview({
-      images,
+      images: realImageUrls,
       startPosition: index
     })
   }
@@ -122,7 +139,7 @@ const handleComment = () => {
               height="30vw"
               fit="cover"
               radius="6"
-              :src="img"
+              :src="getImageUrl(img)"
               class="grid-img"
               @click="previewImage(Number(index))"
             />
@@ -131,7 +148,7 @@ const handleComment = () => {
 
         <van-divider>没有更多内容了</van-divider>
 
-        </div>
+      </div>
     </van-skeleton>
 
     <van-action-bar v-if="!loading && postInfo" class="custom-action-bar van-hairline--top">
@@ -155,120 +172,22 @@ const handleComment = () => {
 </template>
 
 <style scoped>
-.post-detail-container {
-  background-color: #fff;
-  min-height: 100vh;
-  padding-bottom: 60px; /* 给底部 ActionBar 留出空间 */
-}
-
-.skeleton-wrap {
-  margin-top: 20px;
-}
-
-/* 用户信息栏 */
-.author-header {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background-color: #fff;
-}
-
-.author-meta {
-  flex: 1;
-  margin-left: 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-.author-meta .name {
-  font-size: 15px;
-  font-weight: bold;
-  color: #323233;
-}
-
-.author-meta .time {
-  font-size: 12px;
-  color: #969799;
-  margin-top: 4px;
-}
-
-.follow-btn {
-  height: 28px;
-  padding: 0 12px;
-}
-
-/* 正文区域 */
-.post-content {
-  padding: 16px;
-}
-
-.post-content .title {
-  margin: 0 0 12px 0;
-  font-size: 20px;
-  font-weight: bold;
-  color: #323233;
-  line-height: 1.4;
-}
-
-.content-text {
-  font-size: 16px;
-  color: #333;
-  line-height: 1.6;
-  white-space: pre-wrap; /* 保留换行符 */
-  word-wrap: break-word;
-  margin-bottom: 16px;
-}
-
-/* 图片网格 */
-.photo-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.grid-img {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-/* 自定义底部操作栏 (针对帖子进行UI调整) */
-.custom-action-bar {
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  justify-content: space-between;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.02);
-  z-index: 100;
-}
-
-.comment-input-mock {
-  flex: 1;
-  height: 36px;
-  background-color: #f2f3f5;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  color: #969799;
-  font-size: 14px;
-  gap: 6px;
-  margin-right: 20px;
-}
-
-.action-icons {
-  display: flex;
-  gap: 20px;
-}
-
-.icon-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #646566;
-}
-
-.icon-item .count {
-  font-size: 10px;
-  margin-top: 2px;
-}
+/* 此处样式与原来一模一样，保持不变 */
+.post-detail-container { background-color: #fff; min-height: 100vh; padding-bottom: 60px; }
+.skeleton-wrap { margin-top: 20px; }
+.author-header { display: flex; align-items: center; padding: 16px; background-color: #fff; }
+.author-meta { flex: 1; margin-left: 12px; display: flex; flex-direction: column; }
+.author-meta .name { font-size: 15px; font-weight: bold; color: #323233; }
+.author-meta .time { font-size: 12px; color: #969799; margin-top: 4px; }
+.follow-btn { height: 28px; padding: 0 12px; }
+.post-content { padding: 16px; }
+.post-content .title { margin: 0 0 12px 0; font-size: 20px; font-weight: bold; color: #323233; line-height: 1.4; }
+.content-text { font-size: 16px; color: #333; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 16px; }
+.photo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.grid-img { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+.custom-action-bar { display: flex; align-items: center; padding: 0 16px; justify-content: space-between; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.02); z-index: 100; }
+.comment-input-mock { flex: 1; height: 36px; background-color: #f2f3f5; border-radius: 18px; display: flex; align-items: center; padding: 0 16px; color: #969799; font-size: 14px; gap: 6px; margin-right: 20px; }
+.action-icons { display: flex; gap: 20px; }
+.icon-item { display: flex; flex-direction: column; align-items: center; color: #646566; }
+.icon-item .count { font-size: 10px; margin-top: 2px; }
 </style>
