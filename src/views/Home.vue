@@ -11,12 +11,6 @@ const warnings = ref<WarningMessageResponse[]>([])
 const articles = ref<ArticleResponse[]>([])
 const loading = ref(false)
 
-// 轮播图模拟数据（实际项目中可替换为后端获取）
-const banners = [
-  { id: 1, image: 'https://fastly.jsdelivr.net/npm/@vant/assets/apple-1.jpeg', title: '春季果园防病指南' },
-  { id: 2, image: 'https://fastly.jsdelivr.net/npm/@vant/assets/apple-2.jpeg', title: '果农治理经验分享' }
-]
-
 // 快捷入口配置（按要求绑定路由）
 const menuItems = [
   { icon: 'search', text: '病虫百科', path: '/encyclopedia', color: '#07c160' },
@@ -88,13 +82,6 @@ const goToArticleDetail = (id: number) => {
         </van-swipe-item>
       </van-swipe>
     </van-notice-bar>
-
-    <van-swipe class="banner-swipe" :autoplay="4000" indicator-color="white">
-      <van-swipe-item v-for="item in banners" :key="item.id">
-        <img :src="item.image" alt="banner" />
-        <div class="banner-title">{{ item.title }}</div>
-      </van-swipe-item>
-    </van-swipe>
 
     <van-grid :column-num="4" :border="false" class="menu-grid">
       <van-grid-item
@@ -185,6 +172,7 @@ const goToArticleDetail = (id: number) => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-top: 14px;
 }
 
 /* 热门文章区 */
