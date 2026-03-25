@@ -13,6 +13,22 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: env(safe-area-inset-top); /* 占据状态栏高度 */
+  background-color: #ffffff; /* 状态栏背景色，建议设为和你导航栏一致的颜色 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999; /* 确保在最上层 */
+}
+
+#app {
+  margin-top: env(safe-area-inset-top); /* 把内容压下来 */
+}
+
 a {
   font-weight: 500;
   color: #646cff;
