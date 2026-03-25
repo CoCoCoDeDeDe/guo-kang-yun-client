@@ -55,12 +55,18 @@
             placeholder="请输入高发季节或时期 (选填)"
           />
 
-          <van-field
-            v-model="formData.typical_image"
-            name="typical_image"
-            label="典型图片"
-            placeholder="请输入图片URL链接 (选填)"
-          />
+          <van-field name="typical_image" label="典型图片" label-align="top">
+            <template #input>
+              <van-uploader 
+                v-model="fileList" 
+                :max-count="1" 
+                :max-size="5 * 1024 * 1024"
+                :after-read="afterRead"
+                @oversize="onOversize" 
+                upload-text="上传图片" 
+              />
+            </template>
+          </van-field>
 
           <van-field
             v-model="formData.symptom_description"
@@ -99,6 +105,9 @@ import { Service } from '../api/generated';
 import type { PestInfoUpdate } from '../api/generated';
 import type { PestCategoryEnum } from '../api/generated';
 
+// 获取真实后端地址，用于图片回显拼接
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
 const router = useRouter();
 const route = useRoute();
 
@@ -109,15 +118,17 @@ const pestId = Number(route.params.id);
 const isFetching = ref(true); // 是否正在获取详情
 const isSubmitting = ref(false); // 是否正在提交修改
 
-// 表单响应式数据（不使用带 null 的泛型，以便完美适配 v-model 的 string 校验）
+// 表单响应式数据
 const formData = ref({
   name: '',
   category: '' as PestCategoryEnum, 
   affected_part: '',
   symptom_description: '',
   peak_season: '',
-  typical_image: '',
 });
+
+// 新增：图片上传列表
+const fileList = ref<any[]>([]);
 
 // 分类选择器相关逻辑
 const showCategoryPicker = ref(false);
@@ -146,15 +157,29 @@ onMounted(async () => {
   try {
     const res = await Service.readPestApiV1KnowledgePestsPestIdGet(pestId);
     
-    // 数据回填：将可能为 null 的后端数据转换为前端空字符串，保证输入框正常显示
+    // 数据回填
     formData.value = {
       name: res.name,
       category: res.category,
       affected_part: res.affected_part || '',
       symptom_description: res.symptom_description || '',
       peak_season: res.peak_season || '',
-      typical_image: res.typical_image || '',
     };
+
+    // 新增：回显图片
+    if (res.typical_image) {
+      const photo = res.typical_image;
+      // 拼接绝对路径用于 Vant 预览
+      const fullUrl = photo.startsWith('http') 
+        ? photo 
+        : `${API_BASE.replace(/\/$/, '')}${photo.startsWith('/') ? photo : '/' + photo}`;
+      
+      fileList.value = [{
+        url: fullUrl,
+        isImage: true,
+        backendPath: photo // 暂存原始路径，方便提交时使用
+      }];
+    }
   } catch (error) {
     console.error('获取详情失败:', error);
     showToast('获取数据失败，请检查网络');
@@ -165,22 +190,67 @@ onMounted(async () => {
 
 // 导航栏返回
 const onClickLeft = () => {
-  // 根据路由规则说明，返回浏览指定知识页面
   router.push(`/pest/detail/${pestId}`);
+};
+
+// 新增：处理图片上传逻辑
+const afterRead = async (fileItem: any | any[]) => {
+  const items = Array.isArray(fileItem) ? fileItem : [fileItem];
+
+  for (const item of items) {
+    item.status = 'uploading';
+    item.message = '上传中...';
+
+    try {
+      const res = await Service.uploadSingleImageApiV1UploadImagePost({
+        file: item.file as any
+      });
+      
+      item.status = 'done';
+      item.message = '上传成功';
+      item.url = res.image_url; // 供 Vant 预览使用
+      item.backendPath = res.image_url; // 暂存后端返回的真实相对路径
+    } catch (error) {
+      console.error('图片上传失败:', error);
+      item.status = 'failed';
+      item.message = '上传失败';
+    }
+  }
+};
+
+const onOversize = () => {
+  showToast('图片大小不能超过 5MB');
 };
 
 // 提交表单修改
 const onSubmit = async () => {
+  // 校验是否有图片正在上传中或失败
+  if (fileList.value.some(item => item.status === 'uploading')) {
+    showToast('请等待图片上传完成');
+    return;
+  }
+  if (fileList.value.some(item => item.status === 'failed')) {
+    showToast('有图片上传失败，请移除或重试');
+    return;
+  }
+
   isSubmitting.value = true;
   try {
-    // 数据清洗：将前端的空字符串转换回后端需要的 null
+    // 提取上传好的典型图片路径
+    let finalImageUrl = '';
+    if (fileList.value.length > 0) {
+      // 优先使用暂存的相对路径 backendPath
+      finalImageUrl = fileList.value[0].backendPath || fileList.value[0].url;
+    }
+
+    // 数据清洗：如果字段被清空，或者图片被删除，传 null 给后端
     const updatePayload: PestInfoUpdate = {
       name: formData.value.name,
       category: formData.value.category,
       affected_part: formData.value.affected_part || null,
       symptom_description: formData.value.symptom_description || null,
       peak_season: formData.value.peak_season || null,
-      typical_image: formData.value.typical_image || null,
+      typical_image: finalImageUrl || null,
     };
 
     // 发起 Update 更新请求 (PUT)
@@ -188,7 +258,6 @@ const onSubmit = async () => {
     
     showToast({ type: 'success', message: '保存成功' });
     
-    // 延迟一点点返回，让用户看到 Toast 提示
     setTimeout(() => {
       router.push(`/pest/detail/${pestId}`);
     }, 1000);
@@ -207,6 +276,7 @@ const onSubmit = async () => {
 </script>
 
 <style scoped>
+/* 保持原有样式不变 */
 .pest-edit-page {
   min-height: 100vh;
   background-color: #f7f8fa;
