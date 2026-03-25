@@ -12,24 +12,24 @@ const messageId = Number(route.params.id)
 const messageInfo = ref<WarningMessageResponse | null>(null)
 const loading = ref(true)
 
-// 获取消息详情
+// 获取消息详情 (已使用新接口)
 const fetchMessageDetail = async () => {
   loading.value = true
   try {
-    // 【注意】当前 API 没有获取单条预警的接口，这里拉取当前生效列表进行匹配
-    // 如果是从历史记录点进来的，可能在 Active 列表里找不到，建议后端补充通过 ID 查询的接口
-    const res = await Service.readActiveWarningsApiV1WarningActiveGet(0, 100)
-    const foundMsg = res.find(item => item.id === messageId)
+    // 调用直接获取单条预警详情的接口
+    const res = await Service.readWarningApiV1WarningWarningIdGet(messageId)
 
-    if (foundMsg) {
-      messageInfo.value = foundMsg
+    if (res) {
+      messageInfo.value = res
     } else {
       showToast('消息不存在或已过期')
       router.back()
     }
   } catch (error) {
     console.error('获取消息详情失败', error)
-    showToast('获取消息失败，请检查网络')
+    // 后端抛出 404 等错误会进入这里
+    showToast('获取消息失败或记录不存在')
+    router.back()
   } finally {
     loading.value = false
   }
@@ -144,111 +144,22 @@ const getLevelProps = (level?: string) => {
 </template>
 
 <style scoped>
-.message-detail-container {
-  background-color: #f7f8fa;
-  min-height: 100vh;
-}
-
-.skeleton-wrap {
-  margin-top: 20px;
-}
-
-.message-content {
-  padding: 16px;
-}
-
-/* 预警醒目提示框 */
-.alert-banner {
-  padding: 16px;
-  border-radius: 8px;
-  border-width: 1px;
-  border-style: solid;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-}
-
-.alert-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.level-title {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-/* 详情卡片 */
-.detail-card {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 0 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.meta-info {
-  padding: 16px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.meta-item {
-  display: flex;
-  align-items: flex-start;
-  font-size: 14px;
-}
-
-.meta-item .label {
-  color: #969799;
-  min-width: 70px;
-}
-
-.meta-item .value {
-  color: #323233;
-  flex: 1;
-}
-
-.scope-value {
-  font-weight: bold;
-}
-
-/* 正文样式 */
-.main-text {
-  padding: 16px 0 24px 0;
-}
-
-.text-title {
-  font-size: 15px;
-  font-weight: bold;
-  color: #323233;
-  margin-bottom: 12px;
-}
-
-.main-text p {
-  margin: 0;
-  font-size: 15px;
-  color: #333;
-  line-height: 1.8;
-  white-space: pre-wrap; /* 保留文本换行 */
-  word-wrap: break-word;
-}
-
-/* 落款 */
-.official-signature {
-  margin-top: 30px;
-  text-align: right;
-  color: #969799;
-  font-size: 13px;
-  line-height: 1.6;
-  padding-right: 10px;
-}
-
-.official-signature p {
-  margin: 0;
-}
+/* 样式与原来完全一致，保持不变 */
+.message-detail-container { background-color: #f7f8fa; min-height: 100vh; }
+.skeleton-wrap { margin-top: 20px; }
+.message-content { padding: 16px; }
+.alert-banner { padding: 16px; border-radius: 8px; border-width: 1px; border-style: solid; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); }
+.alert-header { display: flex; align-items: center; gap: 8px; }
+.level-title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+.detail-card { background-color: #fff; border-radius: 8px; padding: 0 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); }
+.meta-info { padding: 16px 0; display: flex; flex-direction: column; gap: 10px; }
+.meta-item { display: flex; align-items: flex-start; font-size: 14px; }
+.meta-item .label { color: #969799; min-width: 70px; }
+.meta-item .value { color: #323233; flex: 1; }
+.scope-value { font-weight: bold; }
+.main-text { padding: 16px 0 24px 0; }
+.text-title { font-size: 15px; font-weight: bold; color: #323233; margin-bottom: 12px; }
+.main-text p { margin: 0; font-size: 15px; color: #333; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; }
+.official-signature { margin-top: 30px; text-align: right; color: #969799; font-size: 13px; line-height: 1.6; padding-right: 10px; }
+.official-signature p { margin: 0; }
 </style>
