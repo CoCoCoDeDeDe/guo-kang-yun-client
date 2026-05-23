@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { showToast, showImagePreview } from 'vant'
+import { showToast, showImagePreview, showConfirmDialog } from 'vant'
 import { Service } from '../api/generated'
 import type { GovernanceRecordResponse } from '../api/generated'
 
-// 获取真实后端地址
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
 const route = useRoute()
@@ -15,92 +14,71 @@ const recordId = Number(route.params.id)
 const recordInfo = ref<GovernanceRecordResponse | null>(null)
 const loading = ref(true)
 
-// 获取记录详情 (已使用新接口)
 const fetchRecordDetail = async () => {
   loading.value = true
   try {
-    // 调用直接获取单条记录的接口
     const res = await Service.readGovernanceRecordApiV1GovernanceRecordIdGet(recordId)
-
-    if (res) {
-      recordInfo.value = res
-    } else {
-      showToast('未找到该记录或已被删除')
-      router.replace('/record/list')
-    }
+    if (res) { recordInfo.value = res }
+    else { showToast('记录不存在'); router.replace('/record/list') }
   } catch (error) {
     console.error('获取详情失败', error)
-    // 如果后端在找不到记录时返回 404，就会进入 catch 块
-    showToast('获取详情失败或记录不存在')
+    showToast('获取详情失败')
     router.replace('/record/list')
-  } finally {
-    loading.value = false
-  }
+  } finally { loading.value = false }
 }
 
 onMounted(() => {
-  if (recordId) {
-    fetchRecordDetail()
-  } else {
-    showToast('参数错误')
-    router.replace('/record/list')
-  }
+  if (recordId) fetchRecordDetail()
+  else { showToast('参数错误'); router.replace('/record/list') }
 })
 
-// 返回列表页
-const onClickLeft = () => {
-  router.push('/record/list')
-}
+const onClickLeft = () => router.push('/record/list')
+const goToEdit = () => { if (recordId) router.push(`/record/form?id=${recordId}`) }
 
-// 去编辑页
-const goToEdit = () => {
-  if (recordId) {
-    router.push(`/record/form?id=${recordId}`)
+const deleteRecord = async () => {
+  try {
+    await showConfirmDialog({
+      title: '确认删除',
+      message: '确定要删除这条治理记录吗？删除后不可恢复。'
+    })
+  } catch { return }
+  try {
+    await Service.deleteGovernanceRecordApiV1GovernanceRecordIdDelete(recordId)
+    showToast('已删除')
+    router.replace('/record/list')
+  } catch (error) {
+    console.error('删除失败', error)
+    showToast('删除失败')
   }
 }
 
-// 辅助函数：格式化时间
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '未知时间'
-  const date = new Date(dateStr)
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
 
-// 辅助函数：获取完整图片真实地址
 const getImageUrl = (url?: string) => {
   if (!url) return 'https://fastly.jsdelivr.net/npm/@vant/assets/tree.jpeg'
   if (url.startsWith('http')) return url
-
-  const cleanBase = API_BASE.replace(/\/$/, '')
-  const cleanUrl = url.startsWith('/') ? url : `/${url}`
-
-  return `${cleanBase}${cleanUrl}`
+  const base = API_BASE.replace(/\/$/, '')
+  const u = url.startsWith('/') ? url : `/${url}`
+  return `${base}${u}`
 }
 
-// 辅助函数：解析状态
 const getStatusProps = (status?: string) => {
   switch (status) {
-    case 'completed':
-      return { type: 'success', text: '已解决', icon: 'checked', color: '#07c160' }
-    case 'in_progress':
-      return { type: 'primary', text: '治理中', icon: 'clock', color: '#1989fa' }
-    case 'cancelled':
-      return { type: 'warning', text: '已取消', icon: 'close', color: '#ff976a' }
-    default:
-      return { type: 'default', text: '未知状态', icon: 'question', color: '#969799' }
+    case 'completed': return { type: 'success', text: '已解决', icon: 'checked', color: '#10b981' }
+    case 'in_progress': return { type: 'primary', text: '治理中', icon: 'clock', color: '#3b82f6' }
+    case 'cancelled': return { type: 'warning', text: '已取消', icon: 'close', color: '#f59e0b' }
+    default: return { type: 'default', text: '未知', icon: 'question', color: '#94a3b8' }
   }
 }
 
-// 预览图片
 const previewImage = (index: number) => {
-  if (recordInfo.value?.photos && recordInfo.value.photos.length > 0) {
-    // 映射出完整的真实图片地址数组，供预览组件使用
-    const realImageUrls = recordInfo.value.photos.map(url => getImageUrl(url))
-
-    showImagePreview({
-      images: realImageUrls,
-      startPosition: index
-    })
+  const photos = recordInfo.value?.photos
+  if (photos?.length) {
+    showImagePreview({ images: photos.map(getImageUrl), startPosition: index })
   }
 }
 </script>
@@ -111,137 +89,66 @@ const previewImage = (index: number) => {
 
     <van-skeleton title :row="10" :loading="loading" class="skeleton-wrap">
       <div v-if="recordInfo" class="detail-content">
-
-        <div class="status-banner" :style="{ backgroundColor: getStatusProps(recordInfo.status as string).color }">
+        <div class="status-banner" :style="{ background: getStatusProps(recordInfo.status as string).color }">
           <div class="status-text">
-            <van-icon :name="getStatusProps(recordInfo.status as string).icon" size="24" />
+            <van-icon :name="getStatusProps(recordInfo.status as string).icon" size="22" />
             <span>{{ getStatusProps(recordInfo.status as string).text }}</span>
           </div>
           <div class="status-date">创建于 {{ formatDate(recordInfo.found_time) }}</div>
         </div>
 
-        <van-cell-group inset class="info-group">
+        <van-cell-group inset>
           <van-cell title="病害类型" :value="recordInfo.pest_type || '未填写'" />
           <van-cell title="发现时间" :value="formatDate(recordInfo.found_time)" />
           <van-cell title="果园位置" :value="recordInfo.location || '未填写'" />
         </van-cell-group>
 
-        <van-cell-group inset class="info-group">
-          <div class="section-title">
-            <van-icon name="label-o" /> 治理描述 / 使用药物
-          </div>
-          <div class="desc-content">
-            {{ recordInfo.description || '该记录暂无详细描述' }}
-          </div>
+        <van-cell-group inset>
+          <div class="section-hd"><van-icon name="label-o" /> 治理描述</div>
+          <div class="section-body">{{ recordInfo.description || '暂无详细描述' }}</div>
         </van-cell-group>
 
-        <van-cell-group inset class="info-group">
-          <div class="section-title">
-            <van-icon name="photo-o" /> 现场照片
+        <van-cell-group inset>
+          <div class="section-hd"><van-icon name="photo-o" /> 现场照片</div>
+          <div class="photo-grid" v-if="recordInfo.photos?.length">
+            <van-image v-for="(img, i) in recordInfo.photos" :key="i"
+              width="80" height="80" fit="cover" radius="8"
+              :src="getImageUrl(img)" class="grid-img" @click="previewImage(i)" />
           </div>
-          <div class="photo-grid" v-if="recordInfo.photos && recordInfo.photos.length > 0">
-            <van-image v-for="(img, index) in recordInfo.photos" :key="index" width="80" height="80" fit="cover"
-              radius="8" :src="getImageUrl(img)" class="grid-img" @click="previewImage(index)" />
-          </div>
-          <div class="empty-photo" v-else>
-            <van-empty image-size="60" description="未上传照片" />
-          </div>
+          <van-empty v-else image-size="60" description="未上传照片" />
         </van-cell-group>
-
       </div>
     </van-skeleton>
 
-    <van-action-bar v-if="!loading && recordInfo">
+    <van-action-bar v-if="!loading && recordInfo" :safe-area-inset-bottom="true">
+      <van-action-bar-button type="danger" text="删除记录" icon="delete-o" @click="deleteRecord" />
       <van-action-bar-button type="primary" text="修改记录" icon="edit" @click="goToEdit"
-        color="linear-gradient(to right, #4bb0ff, #07c160)" />
+        color="linear-gradient(135deg, #10b981, #0d9488)" />
     </van-action-bar>
   </div>
 </template>
 
 <style scoped>
-/* 此处样式与原来一模一样，保持不变 */
-.record-detail-container {
-  background-color: #f7f8fa;
-  min-height: 100vh;
-  padding-bottom: 60px;
-}
-
-.skeleton-wrap {
-  margin-top: 20px;
-}
-
-.detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.record-detail-container { background: var(--color-bg); min-height: 100vh; padding-bottom: 60px; }
+.skeleton-wrap { margin-top: 20px; }
+.detail-content { display: flex; flex-direction: column; gap: 14px; }
 
 .status-banner {
-  padding: 24px 20px;
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 28px 20px; color: #fff; display: flex;
+  justify-content: space-between; align-items: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
 }
+.status-text { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; }
+.status-date { font-size: 13px; opacity: .8; }
 
-.status-text {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: bold;
+.section-hd {
+  padding: 14px 16px 6px; font-size: 14px; font-weight: 600;
+  color: var(--color-text-primary); display: flex; align-items: center; gap: 6px;
 }
-
-.status-date {
-  font-size: 13px;
-  opacity: 0.8;
+.section-body {
+  padding: 0 16px 14px; font-size: 14px; color: var(--color-text-secondary);
+  line-height: 1.7; white-space: pre-wrap;
 }
-
-.info-group {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-}
-
-.section-title {
-  padding: 16px 16px 8px 16px;
-  font-size: 15px;
-  font-weight: bold;
-  color: #323233;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.desc-content {
-  padding: 0 16px 16px 16px;
-  font-size: 14px;
-  color: #646566;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.photo-grid {
-  padding: 0 16px 16px 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.grid-img {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-
-.empty-photo {
-  padding-bottom: 10px;
-}
-
-:deep(.van-cell__title) {
-  color: #646566;
-}
-
-:deep(.van-cell__value) {
-  color: #323233;
-  font-weight: 500;
-}
+.photo-grid { padding: 6px 16px 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+.grid-img { box-shadow: 0 2px 6px rgba(0,0,0,.08); }
 </style>
