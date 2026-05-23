@@ -1,24 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Service } from '../api/generated'
 import type { ArticleResponse, PostResponse, UserResponse } from '../api/generated'
 
 const router = useRouter()
 
-// 当前激活的标签
 const activeTab = ref('articles')
 
-// ================= 0. 用户信息与权限逻辑 =================
 const userInfo = ref<UserResponse | null>(null)
-
 const fetchUserInfo = async () => {
   try {
     const res = await Service.readUsersMeApiV1UsersMeGet()
     userInfo.value = res
   } catch (error) { console.error('获取用户信息失败', error) }
 }
-
 onMounted(() => { fetchUserInfo() })
 
 const canPublishArticle = computed(() => {
@@ -33,19 +29,17 @@ const showFab = computed(() => {
 })
 
 const fabConfig = computed(() => {
-  if (activeTab.value === 'articles') return { color: '#1989fa', shadow: 'rgba(25,137,250,0.4)', handler: goToAdminPublishArticle }
-  return { color: '#07c160', shadow: 'rgba(7,193,96,0.4)', handler: goToCreatePost }
+  if (activeTab.value === 'articles') return { color: '#6366f1', handler: goToAdminPublishArticle }
+  return { color: '#10b981', handler: goToCreatePost }
 })
 
-// ================= 1. 文章专栏 =================
+// Articles
 const articles = ref<ArticleResponse[]>([])
 const articleLoading = ref(false)
 const articleFinished = ref(false)
 const articleRefreshing = ref(false)
 let articleSkip = 0
 const articleLimit = 10
-
-// 点赞与收藏状态集合
 const likedArticleIds = ref<Set<number>>(new Set())
 const bookmarkedArticleIds = ref<Set<number>>(new Set())
 
@@ -54,25 +48,17 @@ const onArticleLoad = async () => {
   try {
     articleLoading.value = true
     const res = await Service.readArticlesApiV1CommunityArticlesGet(articleSkip, articleLimit)
-    if (articleRefreshing.value) {
-      articles.value = res
-      articleRefreshing.value = false
-    } else {
-      articles.value.push(...res)
-    }
+    if (articleRefreshing.value) { articles.value = res; articleRefreshing.value = false }
+    else { articles.value.push(...res) }
     articleSkip += articleLimit
     if (res.length < articleLimit) { articleFinished.value = true }
-    // 批量获取点赞与收藏状态
     await fetchArticleInteractionStatus()
-  } catch (error) {
-    console.error('获取文章失败', error)
-    articleFinished.value = true
-  } finally { articleLoading.value = false }
+  } catch (error) { console.error('获取文章失败', error); articleFinished.value = true }
+  finally { articleLoading.value = false }
 }
 
 const fetchArticleInteractionStatus = async () => {
-  const ids = articles.value.map(a => a.id!)
-  if (ids.length === 0) return
+  const ids = articles.value.map(a => a.id!); if (ids.length === 0) return
   try {
     const [likeRes, bmRes] = await Promise.all([
       Service.batchLikeStatusApiV1LikeBatchPost({ target_type: 'article', target_ids: ids }),
@@ -83,21 +69,15 @@ const fetchArticleInteractionStatus = async () => {
   } catch (error) { console.error('获取互动状态失败', error) }
 }
 
-const onArticleRefresh = () => {
-  articleFinished.value = false
-  articleSkip = 0
-  articleRefreshing.value = true
-  onArticleLoad()
-}
+const onArticleRefresh = () => { articleFinished.value = false; articleSkip = 0; articleRefreshing.value = true; onArticleLoad() }
 
-// ================= 2. 果农帖子 =================
+// Posts
 const posts = ref<PostResponse[]>([])
 const postLoading = ref(false)
 const postFinished = ref(false)
 const postRefreshing = ref(false)
 let postSkip = 0
 const postLimit = 10
-
 const likedPostIds = ref<Set<number>>(new Set())
 const bookmarkedPostIds = ref<Set<number>>(new Set())
 
@@ -106,24 +86,17 @@ const onPostLoad = async () => {
   try {
     postLoading.value = true
     const res = await Service.readPostsApiV1CommunityPostsGet(postSkip, postLimit)
-    if (postRefreshing.value) {
-      posts.value = res
-      postRefreshing.value = false
-    } else {
-      posts.value.push(...res)
-    }
+    if (postRefreshing.value) { posts.value = res; postRefreshing.value = false }
+    else { posts.value.push(...res) }
     postSkip += postLimit
     if (res.length < postLimit) { postFinished.value = true }
     await fetchPostInteractionStatus()
-  } catch (error) {
-    console.error('获取帖子失败', error)
-    postFinished.value = true
-  } finally { postLoading.value = false }
+  } catch (error) { console.error('获取帖子失败', error); postFinished.value = true }
+  finally { postLoading.value = false }
 }
 
 const fetchPostInteractionStatus = async () => {
-  const ids = posts.value.map(p => p.id!)
-  if (ids.length === 0) return
+  const ids = posts.value.map(p => p.id!); if (ids.length === 0) return
   try {
     const [likeRes, bmRes] = await Promise.all([
       Service.batchLikeStatusApiV1LikeBatchPost({ target_type: 'post', target_ids: ids }),
@@ -134,51 +107,43 @@ const fetchPostInteractionStatus = async () => {
   } catch (error) { console.error('获取互动状态失败', error) }
 }
 
-const onPostRefresh = () => {
-  postFinished.value = false
-  postSkip = 0
-  postRefreshing.value = true
-  onPostLoad()
-}
+const onPostRefresh = () => { postFinished.value = false; postSkip = 0; postRefreshing.value = true; onPostLoad() }
 
-// ================= 3. 路由跳转 =================
 const goToAdminPublishArticle = () => router.push('/admin/article-publish')
 const goToCreatePost = () => router.push('/post/create')
 const goToPostDetail = (id: number) => router.push(`/post/detail/${id}`)
 const goToArticleDetail = (id: number) => router.push(`/article/detail/${id}`)
 
 const formatDate = (dateString?: string) => {
-  if (!dateString) return '未知时间'
-  return new Date(dateString).toLocaleDateString()
+  if (!dateString) return ''; return new Date(dateString).toLocaleDateString()
 }
 </script>
 
 <template>
   <div class="community-container">
-    <van-nav-bar title="互动社区" fixed placeholder border safe-area-inset-top />
+    <van-nav-bar title="互动社区" fixed placeholder safe-area-inset-top />
 
-    <van-tabs v-model:active="activeTab" sticky offset-top="0" color="#07c160" animated swipeable>
+    <van-tabs v-model:active="activeTab" sticky offset-top="0" animated swipeable>
       <van-tab title="科普文章" name="articles">
         <van-pull-refresh v-model="articleRefreshing" @refresh="onArticleRefresh">
-          <van-list v-model:loading="articleLoading" :finished="articleFinished" finished-text="没有更多文章了" @load="onArticleLoad" class="list-wrapper">
-            <div v-for="item in articles" :key="item.id" class="pure-text-card article-item" @click="goToArticleDetail(item.id!)">
-              <div class="card-tag-row">
-                <van-tag type="primary" plain round>{{ item.category }}</van-tag>
-                <div class="card-actions">
-                  <span :class="['action-icon', { active: likedArticleIds.has(item.id!) }]">
+          <van-list v-model:loading="articleLoading" :finished="articleFinished" finished-text="✨ 没有更多了" @load="onArticleLoad" class="list-wrapper">
+            <div v-for="item in articles" :key="item.id" class="cm-card" @click="goToArticleDetail(item.id!)">
+              <div class="cm-card-top">
+                <van-tag plain round size="small" class="cm-tag">{{ item.category }}</van-tag>
+                <div class="cm-icons">
+                  <span :class="['cm-icon', { active: likedArticleIds.has(item.id!) }]">
                     <van-icon :name="likedArticleIds.has(item.id!) ? 'good-job' : 'good-job-o'" size="16" />
                   </span>
-                  <span :class="['action-icon', { active: bookmarkedArticleIds.has(item.id!) }]">
+                  <span :class="['cm-icon', { active: bookmarkedArticleIds.has(item.id!) }]">
                     <van-icon :name="bookmarkedArticleIds.has(item.id!) ? 'star' : 'star-o'" size="16" />
                   </span>
-                  <span class="views"><van-icon name="eye-o" /> {{ item.views }}</span>
+                  <span class="cm-views"><van-icon name="eye-o" size="12" /> {{ item.views }}</span>
                 </div>
               </div>
-              <h3 class="title">{{ item.title }}</h3>
-              <p class="content-preview van-multi-ellipsis--l2">{{ item.content }}</p>
-              <div class="footer">
-                <span class="author">专家团队</span>
-                <span class="time">{{ formatDate(item.create_at) }}</span>
+              <h3 class="cm-title">{{ item.title }}</h3>
+              <p class="cm-desc">{{ item.content }}</p>
+              <div class="cm-footer">
+                <span>专家团队</span><span class="cm-dot">·</span><span>{{ formatDate(item.create_at) }}</span>
               </div>
             </div>
           </van-list>
@@ -187,71 +152,88 @@ const formatDate = (dateString?: string) => {
 
       <van-tab title="果农交流" name="posts">
         <van-pull-refresh v-model="postRefreshing" @refresh="onPostRefresh">
-          <van-list v-model:loading="postLoading" :finished="postFinished" finished-text="没有更多帖子了" @load="onPostLoad" class="list-wrapper">
-            <div v-for="post in posts" :key="post.id" class="pure-text-card post-item" @click="goToPostDetail(post.id!)">
-              <div class="post-user-row">
-                <div class="text-avatar">{{ String(post.author_id).slice(-1) }}</div>
-                <div class="user-meta">
-                  <span class="username">果农_{{ post.author_id }}</span>
-                  <span class="post-time">{{ formatDate(post.create_at) }}</span>
+          <van-list v-model:loading="postLoading" :finished="postFinished" finished-text="✨ 没有更多了" @load="onPostLoad" class="list-wrapper">
+            <div v-for="post in posts" :key="post.id" class="cm-card" @click="goToPostDetail(post.id!)">
+              <div class="cm-post-row">
+                <div class="cm-avatar">{{ String(post.author_id).slice(-1) }}</div>
+                <div class="cm-user">
+                  <span class="cm-username">果农_{{ post.author_id }}</span>
+                  <span class="cm-time">{{ formatDate(post.create_at) }}</span>
                 </div>
-                <div class="card-actions">
-                  <span :class="['action-icon', { active: likedPostIds.has(post.id!) }]">
+                <div class="cm-icons">
+                  <span :class="['cm-icon', { active: likedPostIds.has(post.id!) }]">
                     <van-icon :name="likedPostIds.has(post.id!) ? 'good-job' : 'good-job-o'" size="16" />
                   </span>
-                  <span :class="['action-icon', { active: bookmarkedPostIds.has(post.id!) }]">
+                  <span :class="['cm-icon', { active: bookmarkedPostIds.has(post.id!) }]">
                     <van-icon :name="bookmarkedPostIds.has(post.id!) ? 'star' : 'star-o'" size="16" />
                   </span>
                 </div>
               </div>
-              <h4 class="post-title">{{ post.title }}</h4>
-              <p class="post-body van-multi-ellipsis--l3">{{ post.content }}</p>
+              <h4 class="cm-post-title">{{ post.title }}</h4>
+              <p class="cm-post-body">{{ post.content }}</p>
             </div>
           </van-list>
         </van-pull-refresh>
       </van-tab>
     </van-tabs>
 
-    <div v-if="showFab" class="fab-btn" :style="{ backgroundColor: fabConfig.color }" @click="fabConfig.handler">
-      <van-icon name="plus" />
+    <div v-if="showFab" class="cm-fab" :style="{ background: fabConfig.color }" @click="fabConfig.handler">
+      <van-icon name="plus" size="22" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.community-container { background-color: #f7f8fa; min-height: 100vh; }
+.community-container { background: var(--color-bg); min-height: 100vh; }
 .list-wrapper { padding: 12px 16px; }
-.pure-text-card {
-  background: #ffffff; border-radius: 12px; padding: 16px;
-  margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+
+.cm-card {
+  background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px;
+  box-shadow: var(--shadow-sm); transition: all var(--transition-fast);
 }
-.pure-text-card:active { background-color: #f2f3f5; transform: scale(0.98); }
+.cm-card:active { transform: scale(.985); box-shadow: var(--shadow-md); }
 
-/* 卡片操作图标 */
-.card-actions { display: flex; align-items: center; gap: 12px; }
-.action-icon { color: #c8c9cc; cursor: pointer; }
-.action-icon.active { color: #ee0a24; }
-.views { font-size: 12px; color: #969799; }
+.cm-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.cm-tag { font-weight: 500; }
+.cm-icons { display: flex; align-items: center; gap: 12px; }
+.cm-icon { color: var(--color-text-muted); }
+.cm-icon.active { color: #ef4444; }
+.cm-views { font-size: 12px; color: var(--color-text-muted); display: flex; align-items: center; gap: 3px; }
 
-.pure-text-card .title { margin: 0 0 8px 0; font-size: 17px; color: #323233; font-weight: 600; line-height: 1.4; }
-.content-preview { font-size: 14px; color: #646566; line-height: 1.6; }
-.footer { font-size: 12px; color: #c8c9cc; display: flex; gap: 12px; margin-top: 12px; }
-
-.post-user-row { display: flex; align-items: center; margin-bottom: 12px; }
-.text-avatar {
-  width: 36px; height: 36px; background: linear-gradient(135deg, #07c160, #10ad7a);
-  color: #fff; border-radius: 50%; display: flex; align-items: center;
-  justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0;
+.cm-title {
+  font-size: 16px; font-weight: 600; color: var(--color-text-primary);
+  margin: 0 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.user-meta { margin-left: 10px; display: flex; flex-direction: column; flex: 1; }
-.username { font-size: 14px; font-weight: 500; color: #323233; }
-.post-time { font-size: 11px; color: #969799; }
-.post-title { font-size: 16px; font-weight: 600; margin: 0 0 6px 0; color: #323233; }
-.post-body { font-size: 14px; color: #444; line-height: 1.6; }
-
-.fab-btn {
-  position: fixed; right: 24px; bottom: 80px; width: 52px; height: 52px;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 24px; z-index: 2000; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+.cm-desc {
+  font-size: 13px; color: var(--color-text-secondary); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; margin: 0 0 10px;
 }
+.cm-footer { font-size: 12px; color: var(--color-text-muted); }
+.cm-dot { margin: 0 6px; }
+
+/* Post */
+.cm-post-row { display: flex; align-items: center; margin-bottom: 10px; }
+.cm-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #10b981, #0d9488);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; margin-right: 10px; flex-shrink: 0;
+}
+.cm-user { flex: 1; display: flex; flex-direction: column; }
+.cm-username { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
+.cm-time { font-size: 11px; color: var(--color-text-muted); }
+.cm-post-title { font-size: 15px; font-weight: 600; margin: 0 0 6px; color: var(--color-text-primary); }
+.cm-post-body {
+  font-size: 13px; color: var(--color-text-secondary); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.cm-fab {
+  position: fixed; right: 20px; bottom: 80px; width: 50px; height: 50px;
+  border-radius: 16px; display: flex; align-items: center; justify-content: center;
+  color: #fff; z-index: 2000; box-shadow: 0 6px 20px rgba(16,185,129,.3);
+  transition: transform var(--transition-fast);
+}
+.cm-fab:active { transform: scale(.9); }
 </style>
