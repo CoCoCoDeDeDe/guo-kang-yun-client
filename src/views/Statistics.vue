@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Service } from '../api/generated'
+
+const router = useRouter()
 import type { StatisticsOverview, DailyStats, PopularArticle } from '../api/generated'
 
 // 总览
@@ -38,7 +41,7 @@ const formatNum = (n?: number) => n?.toLocaleString() ?? '0'
 
 <template>
   <div class="statistics-container">
-    <van-nav-bar title="数据统计" fixed placeholder safe-area-inset-top />
+    <van-nav-bar title="数据统计" left-text="返回" left-arrow fixed placeholder safe-area-inset-top @click-left="router.back()" />
 
     <van-skeleton :row="5" :loading="loading">
       <div class="stat-body">
