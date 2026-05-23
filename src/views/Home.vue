@@ -104,7 +104,7 @@ const goToArticleDetail = (id: number) => router.push(`/article/detail/${id}`)
             @click="goToArticleDetail(article.id!)"
           >
             <div class="ac-top">
-              <van-tag type="primary" plain round size="small">{{ article.category }}</van-tag>
+              <van-tag type="primary" plain round>{{ article.category }}</van-tag>
               <span class="ac-views"><van-icon name="eye-o" size="12" /> {{ article.views || 0 }}</span>
             </div>
             <h4 class="ac-title">{{ article.title }}</h4>

@@ -41,7 +41,7 @@ const enrichBookmarks = async (items: BookmarkItem[]): Promise<EnrichedBookmark[
   const articleMap = new Map<number, { title: string; content: string; author_id: number; create_at: string }>()
   articleResults.forEach((r, i) => {
     if (r.status === 'fulfilled' && r.value) {
-      articleMap.set(articleIds[i], {
+      articleMap.set(articleIds[i]!, {
         title: r.value.title,
         content: r.value.content,
         author_id: r.value.author_id,
@@ -53,7 +53,7 @@ const enrichBookmarks = async (items: BookmarkItem[]): Promise<EnrichedBookmark[
   const postMap = new Map<number, { title: string; content: string; author_id: number; create_at: string }>()
   postResults.forEach((r, i) => {
     if (r.status === 'fulfilled' && r.value) {
-      postMap.set(postIds[i], {
+      postMap.set(postIds[i]!, {
         title: r.value.title,
         content: r.value.content,
         author_id: r.value.author_id,

@@ -129,7 +129,7 @@ const formatDate = (dateString?: string) => {
           <van-list v-model:loading="articleLoading" :finished="articleFinished" finished-text="✨ 没有更多了" @load="onArticleLoad" class="list-wrapper">
             <div v-for="item in articles" :key="item.id" class="cm-card" @click="goToArticleDetail(item.id!)">
               <div class="cm-card-top">
-                <van-tag plain round size="small" class="cm-tag">{{ item.category }}</van-tag>
+                <van-tag plain round class="cm-tag">{{ item.category }}</van-tag>
                 <div class="cm-icons">
                   <span :class="['cm-icon', { active: likedArticleIds.has(item.id!) }]">
                     <van-icon :name="likedArticleIds.has(item.id!) ? 'good-job' : 'good-job-o'" size="16" />

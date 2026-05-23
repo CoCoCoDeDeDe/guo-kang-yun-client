@@ -103,7 +103,7 @@ const getStatusProps = (status?: string) => {
             >
               <div class="card-header">
                 <span class="date"><van-icon name="clock-o" /> {{ formatDate(item.found_time) }}</span>
-                <van-tag :type="getStatusProps(item.status as string).type as any" plain size="small">
+                <van-tag :type="getStatusProps(item.status as string).type as any" plain>
                   {{ getStatusProps(item.status as string).text }}
                 </van-tag>
               </div>
