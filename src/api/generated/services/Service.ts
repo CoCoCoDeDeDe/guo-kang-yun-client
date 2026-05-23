@@ -8,20 +8,37 @@ import type { AuditAction } from '../models/AuditAction';
 import type { Body_login_for_access_token_api_v1_users_login_post } from '../models/Body_login_for_access_token_api_v1_users_login_post';
 import type { Body_upload_multiple_images_api_v1_upload_images_post } from '../models/Body_upload_multiple_images_api_v1_upload_images_post';
 import type { Body_upload_single_image_api_v1_upload_image_post } from '../models/Body_upload_single_image_api_v1_upload_image_post';
+import type { BookmarkBatchRequest } from '../models/BookmarkBatchRequest';
+import type { BookmarkBatchResponse } from '../models/BookmarkBatchResponse';
+import type { BookmarkListResponse } from '../models/BookmarkListResponse';
+import type { BookmarkStatusResponse } from '../models/BookmarkStatusResponse';
+import type { BookmarkToggleRequest } from '../models/BookmarkToggleRequest';
+import type { BookmarkToggleResponse } from '../models/BookmarkToggleResponse';
+import type { DailyStats } from '../models/DailyStats';
 import type { GovernanceRecordCreate } from '../models/GovernanceRecordCreate';
 import type { GovernanceRecordResponse } from '../models/GovernanceRecordResponse';
 import type { GovernanceRecordUpdate } from '../models/GovernanceRecordUpdate';
+import type { LikeBatchRequest } from '../models/LikeBatchRequest';
+import type { LikeBatchResponse } from '../models/LikeBatchResponse';
+import type { LikeStatusResponse } from '../models/LikeStatusResponse';
+import type { LikeToggleRequest } from '../models/LikeToggleRequest';
+import type { LikeToggleResponse } from '../models/LikeToggleResponse';
 import type { PasswordResetConfirm } from '../models/PasswordResetConfirm';
 import type { PasswordResetRequest } from '../models/PasswordResetRequest';
 import type { PestInfoCreate } from '../models/PestInfoCreate';
 import type { PestInfoResponse } from '../models/PestInfoResponse';
 import type { PestInfoUpdate } from '../models/PestInfoUpdate';
+import type { PopularArticle } from '../models/PopularArticle';
 import type { PostCreate } from '../models/PostCreate';
 import type { PostResponse } from '../models/PostResponse';
+import type { RoleEnum } from '../models/RoleEnum';
+import type { RoleUpdateRequest } from '../models/RoleUpdateRequest';
 import type { SendCodeRequest } from '../models/SendCodeRequest';
+import type { StatisticsOverview } from '../models/StatisticsOverview';
 import type { Token } from '../models/Token';
 import type { UserChangePassword } from '../models/UserChangePassword';
 import type { UserCreate } from '../models/UserCreate';
+import type { UserListResponse } from '../models/UserListResponse';
 import type { UserProfileUpdate } from '../models/UserProfileUpdate';
 import type { UserResponse } from '../models/UserResponse';
 import type { WarningMessageCreate } from '../models/WarningMessageCreate';
@@ -754,6 +771,274 @@ export class Service {
             url: '/api/v1/upload/images',
             formData: formData,
             mediaType: 'multipart/form-data',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 点赞/取消点赞 (Toggle)
+     * @param requestBody
+     * @returns LikeToggleResponse Successful Response
+     * @throws ApiError
+     */
+    public static toggleLikeApiV1LikeTogglePost(
+        requestBody: LikeToggleRequest,
+    ): CancelablePromise<LikeToggleResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/like/toggle',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 查询点赞状态
+     * @param targetType
+     * @param targetId
+     * @returns LikeStatusResponse Successful Response
+     * @throws ApiError
+     */
+    public static getLikeStatusApiV1LikeStatusGet(
+        targetType: string,
+        targetId: number,
+    ): CancelablePromise<LikeStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/like/status',
+            query: {
+                'target_type': targetType,
+                'target_id': targetId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 批量查询点赞状态
+     * @param requestBody
+     * @returns LikeBatchResponse Successful Response
+     * @throws ApiError
+     */
+    public static batchLikeStatusApiV1LikeBatchPost(
+        requestBody: LikeBatchRequest,
+    ): CancelablePromise<LikeBatchResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/like/batch',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 收藏/取消收藏 (Toggle)
+     * @param requestBody
+     * @returns BookmarkToggleResponse Successful Response
+     * @throws ApiError
+     */
+    public static toggleBookmarkApiV1BookmarkTogglePost(
+        requestBody: BookmarkToggleRequest,
+    ): CancelablePromise<BookmarkToggleResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/bookmark/toggle',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 查询收藏状态
+     * @param targetType
+     * @param targetId
+     * @returns BookmarkStatusResponse Successful Response
+     * @throws ApiError
+     */
+    public static getBookmarkStatusApiV1BookmarkStatusGet(
+        targetType: string,
+        targetId: number,
+    ): CancelablePromise<BookmarkStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/bookmark/status',
+            query: {
+                'target_type': targetType,
+                'target_id': targetId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 批量查询收藏状态
+     * @param requestBody
+     * @returns BookmarkBatchResponse Successful Response
+     * @throws ApiError
+     */
+    public static batchBookmarkStatusApiV1BookmarkBatchPost(
+        requestBody: BookmarkBatchRequest,
+    ): CancelablePromise<BookmarkBatchResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/bookmark/batch',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 我的收藏列表
+     * @param targetType
+     * @param skip
+     * @param limit
+     * @returns BookmarkListResponse Successful Response
+     * @throws ApiError
+     */
+    public static readMyBookmarksApiV1BookmarkMeGet(
+        targetType?: string,
+        skip?: number,
+        limit: number = 20,
+    ): CancelablePromise<BookmarkListResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/bookmark/me',
+            query: {
+                'target_type': targetType,
+                'skip': skip,
+                'limit': limit,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 平台数据总览
+     * @returns StatisticsOverview Successful Response
+     * @throws ApiError
+     */
+    public static getStatisticsOverviewApiV1StatisticsOverviewGet(): CancelablePromise<StatisticsOverview> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/statistics/overview',
+        });
+    }
+    /**
+     * 热门文章（按浏览量）
+     * @param limit
+     * @returns PopularArticle Successful Response
+     * @throws ApiError
+     */
+    public static getPopularArticlesApiV1StatisticsPopularArticlesGet(
+        limit: number = 10,
+    ): CancelablePromise<Array<PopularArticle>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/statistics/popular/articles',
+            query: {
+                'limit': limit,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 热门内容（按点赞数）
+     * @param targetType
+     * @param limit
+     * @returns PopularArticle Successful Response
+     * @throws ApiError
+     */
+    public static getPopularByLikesApiV1StatisticsPopularByLikesGet(
+        targetType: string,
+        limit: number = 10,
+    ): CancelablePromise<Array<PopularArticle>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/statistics/popular/by-likes',
+            query: {
+                'target_type': targetType,
+                'limit': limit,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 今日新增数据
+     * @returns DailyStats Successful Response
+     * @throws ApiError
+     */
+    public static getDailyStatsApiV1StatisticsDailyGet(): CancelablePromise<DailyStats> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/statistics/daily',
+        });
+    }
+    /**
+     * 管理员获取用户列表
+     * 仅限管理员访问。支持按角色筛选和邮箱/昵称搜索。
+     * @param role
+     * @param search
+     * @param skip
+     * @param limit
+     * @returns UserListResponse Successful Response
+     * @throws ApiError
+     */
+    public static readUsersAdminListApiV1UsersAdminListGet(
+        role?: (RoleEnum | null),
+        search?: string,
+        skip?: number,
+        limit: number = 20,
+    ): CancelablePromise<UserListResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/users/admin/list',
+            query: {
+                'role': role,
+                'search': search,
+                'skip': skip,
+                'limit': limit,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 修改用户角色
+     * 仅限管理员访问。安全约束：不能修改自己的角色，不能修改其他 ADMIN 的角色，不能将任何人设为 ADMIN，只能将 FARMER ↔ EXPERT 互转。
+     * @param userId
+     * @param requestBody
+     * @returns UserResponse Successful Response
+     * @throws ApiError
+     */
+    public static updateUserRoleApiV1UsersAdminUserIdRolePut(
+        userId: number,
+        requestBody: RoleUpdateRequest,
+    ): CancelablePromise<UserResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/users/admin/{user_id}/role',
+            path: {
+                'user_id': userId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

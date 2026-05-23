@@ -115,6 +115,22 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/ProfileEdit.vue'),
     meta: { requiresAuth: true }
   },
+
+  // 4. 收藏 & 统计
+  {
+    path: '/bookmarks',
+    name: 'BookmarkList',
+    component: () => import('../views/BookmarkList.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/statistics',
+    name: 'Statistics',
+    component: () => import('../views/Statistics.vue'),
+    meta: { requiresAuth: true }
+  },
+
+  // 5. 管理后台（需 ADMIN 角色）
   {
     path: '/admin/audit',
     name: 'AuditDashboard',
@@ -155,6 +171,12 @@ const routes: RouteRecordRaw[] = [
     path: '/admin/pest/edit/:id',
     name: 'AdminPestEdit',
     component: () => import('../views/AdminPestEdit.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/users',
+    name: 'AdminUsers',
+    component: () => import('../views/AdminUsers.vue'),
     meta: { requiresAuth: true }
   },
 ]

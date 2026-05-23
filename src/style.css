@@ -1,112 +1,288 @@
+/* ===================================================
+   果康云 (Guo Kang Yun) — 全局样式系统
+   Mobile-first · Light theme · Vant 4
+   =================================================== */
+
+/* --- CSS Custom Properties --- */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Brand colors */
+  --color-primary: #07c160;
+  --color-primary-light: #e8f7ed;
+  --color-primary-dark: #06ad56;
+  --color-danger: #ee0a24;
+  --color-danger-light: #ffeaeb;
+  --color-warning: #ff976a;
+  --color-info: #1989fa;
+  --color-info-light: #e8f2ff;
+  --color-purple: #7232dd;
+  --color-purple-light: #f1ecf9;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Neutrals */
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-border: #ebedf0;
+  --color-text-primary: #323233;
+  --color-text-secondary: #646566;
+  --color-text-muted: #969799;
+  --color-text-placeholder: #c8c9cc;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-round: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-up: 0 -2px 10px rgba(0, 0, 0, 0.05);
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 22px;
+  --font-size-3xl: 28px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.35s ease;
 }
 
-body::before {
-  content: '';
-  display: block;
-  width: 100%;
-  height: env(safe-area-inset-top); /* 占据状态栏高度 */
-  background-color: #ffffff; /* 状态栏背景色，建议设为和你导航栏一致的颜色 */
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999; /* 确保在最上层 */
+/* --- Reset & Base --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-#app {
-  margin-top: env(safe-area-inset-top); /* 把内容压下来 */
-}
-
-/* 1. 给所有的固定定位导航栏增加顶部安全区距离 */
-.van-nav-bar--fixed {
-  padding-top: env(safe-area-inset-top);
-  background-color: #fff; /* 确保背景色填满状态栏区域 */
-}
-
-/* 2. 这里的目的是防止页面主体内容被加高后的导航栏遮挡 */
-/* Vant NavBar fixed 模式下通常会有一个 placeholder，如果没有，手动给容器加 margin */
-.van-nav-bar__placeholder {
-  height: calc(46px + env(safe-area-inset-top)) !important;
-}
-
-/* 3. 如果你没有使用 placeholder，可以直接针对页面容器 */
-.record-form-container, .main-layout-container {
-  padding-top: env(safe-area-inset-top);
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
-  /* display: flex;
-  place-items: center; */
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
-  /* max-width: 1280px; */
+  max-width: 100vw;
   margin: 0 auto;
-  /* padding: 2rem; */
-  /* text-align: center; */
+  background-color: var(--color-bg);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* --- Safe Area (iOS notch / status bar) --- */
+body::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: env(safe-area-inset-top);
+  background-color: var(--color-surface);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.van-nav-bar--fixed {
+  padding-top: env(safe-area-inset-top);
+  background-color: var(--color-surface);
+}
+
+.van-nav-bar__placeholder {
+  height: calc(46px + env(safe-area-inset-top)) !important;
+}
+
+/* --- Typography --- */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+p {
+  margin: 0 0 var(--spacing-md);
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:active { opacity: 0.7; }
+
+/* --- Links --- */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* --- Vant Component Overrides --- */
+/* NavBar */
+.van-nav-bar {
+  --van-nav-bar-background: var(--color-surface);
+  --van-nav-bar-title-text-color: var(--color-text-primary);
+  --van-nav-bar-icon-color: var(--color-text-primary);
+  --van-nav-bar-text-color: var(--color-text-primary);
+}
+
+.van-nav-bar__title {
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+}
+
+/* Tabs */
+.van-tabs__nav {
+  background-color: var(--color-surface);
+}
+
+.van-tab {
+  font-size: var(--font-size-md);
+}
+
+.van-tab--active {
+  font-weight: 600;
+}
+
+/* Card-like groups */
+.van-cell-group--inset {
+  margin: var(--spacing-md);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.van-cell {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+}
+
+.van-cell__title {
+  color: var(--color-text-primary);
+}
+
+/* Button */
+.van-button {
+  font-weight: 500;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.van-button:active {
+  transform: scale(0.97);
+}
+
+.van-button--round {
+  border-radius: var(--radius-round);
+}
+
+/* Tag */
+.van-tag {
+  font-weight: 500;
+}
+
+/* Toast */
+.van-toast {
+  font-size: var(--font-size-md);
+  border-radius: var(--radius-md);
+}
+
+/* Dialog */
+.van-dialog {
+  border-radius: var(--radius-lg);
+}
+
+/* Empty */
+.van-empty__description {
+  color: var(--color-text-muted);
+}
+
+/* Skeleton */
+.van-skeleton {
+  padding: var(--spacing-lg);
+}
+
+/* PullRefresh / List */
+.van-pull-refresh {
+  min-height: 60vh;
+}
+
+/* ActionBar */
+.van-action-bar {
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-up);
+}
+
+/* Field */
+.van-field__control {
+  font-size: var(--font-size-md);
+}
+
+/* --- Utility Classes --- */
+.text-muted {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.surface-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.page-container {
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Page transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-fast);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* --- Focus visible --- */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
